@@ -1,0 +1,7 @@
+# Node dependencies and build output
+node_modules/
+dist/
+.vite/
+
+# TypeScript incremental build info
+*.tsbuildinfo

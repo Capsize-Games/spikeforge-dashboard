@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "gen:protocol": "node ../protocol/codegen/generate_ts.mjs",
+    "gen:protocol": "node ./protocol/codegen/generate_ts.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

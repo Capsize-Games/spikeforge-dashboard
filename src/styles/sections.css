@@ -37,18 +37,11 @@
   padding: 2px 0 14px;
 }
 
-.col-controls,
-.col-viz,
-.col-training {
+.col-viz {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-}
-
-/* The middle column is the densest: pack it tighter than the sides. */
-.col-viz {
   gap: 8px;
+  min-height: 0;
 }
 
 .col-viz .panel {

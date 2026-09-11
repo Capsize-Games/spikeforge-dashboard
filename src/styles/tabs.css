@@ -1,0 +1,111 @@
+/* --- tabbed shell: the strip below the top bar, and the tab panels --- */
+
+/* Horizontal scroll keeps every tab reachable when the window is narrow. */
+.tabbar {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  margin-top: 10px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* Namespaced: `.tab` already belongs to the model panel's load/save switch. */
+.shell-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.shell-tab:hover {
+  color: var(--text);
+}
+
+.shell-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.shell-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Marks a tab whose background work (training, download) is still running. */
+.shell-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: shell-tab-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes shell-tab-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-tab-dot {
+    animation: none;
+  }
+}
+
+/* One tab at a time, centred and capped so wide screens stay readable. */
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: center;
+  width: 100%;
+  max-width: 1440px;
+}
+
+/* An inactive tab is hidden rather than unmounted, so its panels keep
+   running. This rule must also beat a panel's own `display`, which the
+   attribute's user-agent style does not. */
+.tab-panel[hidden] {
+  display: none;
+}
+
+/* Side-by-side columns inside a tab (e.g. model + controls). */
+.tab-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.tab-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Cap single-panel tabs (hub) so search and lists don't stretch forever. */
+.tab-col.narrow {
+  max-width: 900px;
+}
+
+@media (max-width: 900px) {
+  .tab-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

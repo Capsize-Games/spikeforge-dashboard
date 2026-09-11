@@ -1,11 +1,6 @@
 import type { TrajectoryPayload } from "../introspectionTypes";
 import type { NirGraphPayload, NirValidationPayload } from "../nirTypes";
 import type {
-  BackendRunPayload,
-  DeploymentReportPayload,
-  TargetListPayload,
-} from "../targetTypes";
-import type {
   AnimationStatePayload,
   CodingType,
   ExecutionMode,
@@ -20,7 +15,6 @@ import { LoadedModelPanel } from "./LoadedModelPanel";
 import { NetworkActivity } from "./NetworkActivity";
 import { NirGraphPanel } from "./NirGraphPanel";
 import { NirValidationPanel } from "./NirValidationPanel";
-import { TargetsPanel } from "./TargetsPanel";
 import { TimeCursor } from "./TimeCursor";
 import { TrajectoryPanel } from "./TrajectoryPanel";
 
@@ -43,9 +37,6 @@ interface Props {
   trajectory: TrajectoryPayload | null;
   nirGraph: NirGraphPayload | null;
   nirValidation: NirValidationPayload | null;
-  targetList: TargetListPayload | null;
-  deploymentReport: DeploymentReportPayload | null;
-  backendRun: BackendRunPayload | null;
   playing: boolean;
   onPlay: () => void;
   onStop: () => void;
@@ -54,13 +45,10 @@ interface Props {
   onRefreshTrajectory: () => void;
   onRefreshNirGraph: () => void;
   onRefreshNirValidation: () => void;
-  onRefreshTargets: () => void;
-  onSelectTarget: (name: string) => void;
-  onRunBackend: (name: string) => void;
   onSwitchToEducational: () => void;
 }
 
-/** The middle column: model summary, cursor, input, activity, NIR panels. */
+/** The viewer tab: model tag, cursor, input, activity, trajectory, NIR. */
 export function ViewerPanels({
   sample,
   eventFrame,
@@ -80,9 +68,6 @@ export function ViewerPanels({
   trajectory,
   nirGraph,
   nirValidation,
-  targetList,
-  deploymentReport,
-  backendRun,
   playing,
   onPlay,
   onStop,
@@ -91,9 +76,6 @@ export function ViewerPanels({
   onRefreshTrajectory,
   onRefreshNirGraph,
   onRefreshNirValidation,
-  onRefreshTargets,
-  onSelectTarget,
-  onRunBackend,
   onSwitchToEducational,
 }: Props) {
   return (
@@ -143,15 +125,6 @@ export function ViewerPanels({
       <NirValidationPanel
         validation={nirValidation}
         onRefresh={onRefreshNirValidation}
-      />
-
-      <TargetsPanel
-        list={targetList}
-        report={deploymentReport}
-        backendRun={backendRun}
-        onRefresh={onRefreshTargets}
-        onSelectTarget={onSelectTarget}
-        onRunBackend={onRunBackend}
       />
     </div>
   );

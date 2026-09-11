@@ -164,6 +164,10 @@ export function RasterCanvas({
     ctx.fillText(String(steps), plotW - 20, canvas.height - 6);
   }, [
     raster,
+    // plotWidth is the canvas' real pixel width: React rewrites the width
+    // attribute when it changes, which clears the bitmap — so the redraw has
+    // to be triggered by it, not only by the (fixed) default width prop.
+    plotWidth,
     width,
     height,
     highlightStep,

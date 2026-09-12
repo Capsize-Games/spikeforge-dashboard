@@ -1,10 +1,12 @@
 # WebSocket protocol contract
 
-This directory is the **single source of truth** for the browser/server
-WebSocket protocol. The JSON Schema files here (draft 2020-12) are the only
-editable authority: the Python pydantic models under `server/schemas/`, the
-generated TypeScript under `client/src/protocol/generated.ts`, and the wire
-itself are all *derived* from or *checked against* these schemas.
+This directory mirrors the same `protocol/` directory in the main
+[spikeforge](https://github.com/capsize-games/spikeforge) repository, which is
+the **single source of truth** for the browser/server WebSocket protocol. The
+JSON Schema files here (draft 2020-12) are the only editable authority: in the
+main repository the Python pydantic models under `server/schemas/` are
+*checked against* these schemas via a parity test, and in this repository
+`src/protocol/generated.ts` is *derived* from them via codegen.
 
 - `protocol_version.txt` — the current version string. It is the single
   source of `protocol_version` for the server, both envelopes, and codegen.
@@ -12,13 +14,15 @@ itself are all *derived* from or *checked against* these schemas.
 - `client_message.schema.json` — the inbound (browser → server) envelope.
 - `server_message.schema.json` — the outbound (server → browser) envelope.
 - `payloads/*.schema.json` — the nested payload shapes.
-- `codegen/generate_ts.mjs` — emits `client/src/protocol/generated.ts`.
+- `codegen/generate_ts.mjs` — emits `src/protocol/generated.ts`.
 
 ## How to change the contract
 
 **Additive is the default; breaking changes are a MAJOR bump.** Edit the
-schema first, then regenerate and let the parity test
-(`tests/test_protocol_schema_parity.py`) prove the Python models still agree.
+schema in the main [spikeforge](https://github.com/capsize-games/spikeforge)
+repository first, let its parity test (`tests/test_protocol_schema_parity.py`)
+prove the Python models still agree, then mirror the schema change here and
+regenerate `src/protocol/generated.ts`.
 
 1. **Additive, non-breaking (no version bump).** Adding an optional payload
    key, a new descriptive envelope field, or relaxing a constraint is allowed
@@ -40,12 +44,11 @@ When the version changes, update `protocol_version.txt` and the `const` in
 ## Regenerating the TypeScript
 
 ```bash
-cd client
 npm install            # once, to pick up json-schema-to-typescript
-npm run gen:protocol   # writes client/src/protocol/generated.ts
+npm run gen:protocol   # writes src/protocol/generated.ts
 ```
 
-CI enforces `git diff --exit-code client/src/protocol/generated.ts` after
+CI enforces `git diff --exit-code src/protocol/generated.ts` after
 `npm run gen:protocol`, so a schema change without regenerated types fails,
 and a generated-type change without a schema change fails too.
 

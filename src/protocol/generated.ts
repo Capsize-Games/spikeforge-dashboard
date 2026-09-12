@@ -20,6 +20,7 @@ export interface ProtocolContract {
   EncodeConfig?: EncodeConfig;
   HubQuery?: HubQuery;
   ModelQuery?: ModelQuery;
+  PipelineGraph?: PipelineGraph;
   ServerPayload?: ServerPayload;
   TrainConfig?: TrainConfig;
   ServerMessage?: ServerMessage;
@@ -64,13 +65,27 @@ export interface ClientMessage {
     | "hub_download"
     | "hub_cancel"
     | "hub_inspect"
-    | "hub_import";
+    | "hub_import"
+    | "list_pipelines"
+    | "save_pipeline"
+    | "load_pipeline"
+    | "delete_pipeline"
+    | "run_pipeline"
+    | "stop_pipeline";
   config?: EncodeConfig;
   train?: TrainConfig;
   query?: ModelQuery;
   hub?: HubQuery;
   name?: string | null;
   sparse?: boolean;
+  pipeline?: PipelineGraph;
+  /**
+   * Feeds run_pipeline's source node(s): one frame per entry, raw or already-encoded per `encoded`.
+   */
+  pipeline_input?: {
+    frames?: unknown[];
+    encoded?: boolean;
+  };
   [k: string]: unknown;
 }
 /**
@@ -165,6 +180,27 @@ export interface HubQuery {
   [k: string]: unknown;
 }
 /**
+ * Mirrors server/schemas/pipeline_graph.py::PipelineGraphConfig and spikeforge_serve.pipeline.PipelineGraph. A DAG of saved checkpoints: nodes run once each, in topological order, and a node's input is entirely determined by its incoming edge's `extract` of the upstream node's output. Semantic checks (cycles, unknown node references, fan-in) are not expressed here -- they're enforced by PipelineGraph.from_dict/validate, not this shape-only schema.
+ */
+export interface PipelineGraph {
+  version?: number;
+  name?: string;
+  nodes?: {
+    id: string;
+    checkpoint: string;
+    position?: {
+      x?: number;
+      y?: number;
+    };
+  }[];
+  edges?: {
+    id: string;
+    source: string;
+    target: string;
+    extract?: "mean_logits" | "predicted_class" | "one_hot";
+  }[];
+}
+/**
  * Shared $defs used by both the inbound and outbound envelopes. This file is the common vocabulary; each direction's envelope inlines the concrete properties so the two are independently readable.
  */
 export interface Envelope {
@@ -223,7 +259,13 @@ export interface ServerMessage {
     | "hub_search"
     | "hub_download_state"
     | "hub_inspect"
-    | "hub_import";
+    | "hub_import"
+    | "pipeline_list"
+    | "pipeline_saved"
+    | "pipeline_loaded"
+    | "pipeline_deleted"
+    | "pipeline_node_result"
+    | "pipeline_run_state";
   payload?: unknown;
   source?: string | null;
   kind?: string | null;

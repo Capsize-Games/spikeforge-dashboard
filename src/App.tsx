@@ -6,12 +6,14 @@ import { DownloadProgress } from "./components/DownloadProgress";
 import { EnergyPanel } from "./components/EnergyPanel";
 import { HubPanel } from "./components/HubPanel";
 import { ModelPanel } from "./components/ModelPanel";
+import { Section } from "./components/Stepper";
 import { StatusBar } from "./components/StatusBar";
 import { TabBar } from "./components/TabBar";
 import { TabPanel } from "./components/TabPanel";
 import { TargetsPanel } from "./components/TargetsPanel";
 import { TopBar } from "./components/TopBar";
 import { TourCard } from "./components/TourCard";
+import { TrainControls } from "./components/TrainControls";
 import { TrainingPanel } from "./components/TrainingPanel";
 import { ViewerPanels } from "./components/ViewerPanels";
 import { useEncodeConfig } from "./hooks/useEncodeConfig";
@@ -123,7 +125,7 @@ export default function App() {
 
       <main className="app-main">
         <TabPanel id="model" active={tabs.active}>
-          <div className="tab-cols">
+          <div className="tab-cols tab-cols-model">
             <div className="tab-col">
               <ModelPanel
                 models={training.state.models}
@@ -135,6 +137,20 @@ export default function App() {
                 onLoad={actions.loadModel}
                 onSave={actions.saveModel}
               />
+
+              <div className="panel">
+                <Section
+                  title="Train & inspect"
+                  hint="fit the network, manage checkpoints"
+                >
+                  <TrainControls
+                    running={training.state.running}
+                    connected={ws.connected}
+                    onTrain={actions.train}
+                    onStop={actions.stopTrain}
+                  />
+                </Section>
+              </div>
             </div>
 
             <div className="tab-col">
@@ -143,8 +159,6 @@ export default function App() {
                 model={training.state.config}
                 datasets={training.state.datasets}
                 gpuAvailable={viewer.gpuAvailable}
-                connected={ws.connected}
-                trainRunning={training.state.running}
                 topologies={training.state.topologies}
                 neurons={training.state.neurons}
                 surrogates={training.state.surrogates}
@@ -152,8 +166,6 @@ export default function App() {
                 onChange={patchConfig}
                 onModelChange={training.patch}
                 onSelectSample={actions.selectSample}
-                onTrain={actions.train}
-                onStopTrain={actions.stopTrain}
               />
             </div>
           </div>

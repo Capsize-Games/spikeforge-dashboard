@@ -79,53 +79,57 @@ export function ViewerPanels({
   onSwitchToEducational,
 }: Props) {
   return (
-    <div className="col-viz">
-      {loaded && <LoadedModelPanel loaded={loaded} />}
+    <div className="viewer-grid">
+      <div className="col-viz">
+        <TimeCursor
+          step={timeStep}
+          numSteps={numSteps}
+          playing={playing}
+          sampleIndex={sampleIndex}
+          onScrub={onScrub}
+          onPlay={onPlay}
+          onStop={onStop}
+          onSelectSample={onSelectSample}
+        />
 
-      <TimeCursor
-        step={timeStep}
-        numSteps={numSteps}
-        playing={playing}
-        sampleIndex={sampleIndex}
-        onScrub={onScrub}
-        onPlay={onPlay}
-        onStop={onStop}
-        onSelectSample={onSelectSample}
-      />
+        <InputRow
+          sample={sample}
+          eventFrame={eventFrame}
+          spikeFrame={spikeFrame}
+          reconGain1={reconGain1}
+          inference={inference}
+          coding={coding}
+          modality={modality}
+        />
 
-      <InputRow
-        sample={sample}
-        eventFrame={eventFrame}
-        spikeFrame={spikeFrame}
-        reconGain1={reconGain1}
-        inference={inference}
-        coding={coding}
-        modality={modality}
-      />
+        <NetworkActivity
+          rasters={rasters}
+          inference={inference}
+          timeStep={timeStep}
+          modality={modality}
+          hiddenFrame={hiddenFrame}
+          animation={animation}
+        />
+      </div>
 
-      <NetworkActivity
-        rasters={rasters}
-        inference={inference}
-        timeStep={timeStep}
-        modality={modality}
-        hiddenFrame={hiddenFrame}
-        animation={animation}
-      />
+      <div className="col-viz viewer-col-side">
+        {loaded && <LoadedModelPanel loaded={loaded} />}
 
-      <TrajectoryPanel
-        mode={mode}
-        trajectory={trajectory}
-        cursorIndex={timeStep}
-        onRefresh={onRefreshTrajectory}
-        onSwitchMode={onSwitchToEducational}
-      />
+        <TrajectoryPanel
+          mode={mode}
+          trajectory={trajectory}
+          cursorIndex={timeStep}
+          onRefresh={onRefreshTrajectory}
+          onSwitchMode={onSwitchToEducational}
+        />
 
-      <NirGraphPanel graph={nirGraph} onRefresh={onRefreshNirGraph} />
+        <NirGraphPanel graph={nirGraph} onRefresh={onRefreshNirGraph} />
 
-      <NirValidationPanel
-        validation={nirValidation}
-        onRefresh={onRefreshNirValidation}
-      />
+        <NirValidationPanel
+          validation={nirValidation}
+          onRefresh={onRefreshNirValidation}
+        />
+      </div>
     </div>
   );
 }

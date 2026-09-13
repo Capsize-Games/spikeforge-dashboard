@@ -82,7 +82,9 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    # Electron launches this with windowsHide, while a console build keeps
+    # startup exceptions visible to CI instead of blocking on a hidden dialog.
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

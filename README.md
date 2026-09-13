@@ -1,6 +1,7 @@
 # spikeforge-dashboard
 
 [![CI](https://github.com/capsize-games/spikeforge-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/capsize-games/spikeforge-dashboard/actions/workflows/ci.yml)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://capsizegames.com/discord)
 [![Status: pre-1.0](https://img.shields.io/badge/status-pre--1.0-orange.svg)](package.json)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/capsize-games/spikeforge-dashboard/pulls)

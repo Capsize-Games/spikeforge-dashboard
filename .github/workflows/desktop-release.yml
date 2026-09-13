@@ -72,7 +72,6 @@ jobs:
           path: |
             release/*.AppImage
             release/*.exe
-            release/*.zip
           if-no-files-found: error
 
   release:

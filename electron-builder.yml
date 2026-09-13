@@ -31,7 +31,6 @@ linux:
 win:
   target:
     - portable
-    - zip
   icon: desktop/assets/icon.png
 portable:
   artifactName: "SpikeForge-Desktop-${version}-windows-${arch}-portable.${ext}"

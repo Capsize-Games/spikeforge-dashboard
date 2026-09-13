@@ -5,3 +5,9 @@ dist/
 
 # TypeScript incremental build info
 *.tsbuildinfo
+# headlesscode session artifacts (events, reports, usage, scratch, memory)
+/.headlesscode/
+
+# Local parallel-task orchestration state and generated task briefs
+/.worktrees/
+/plans/parallel-tasks/

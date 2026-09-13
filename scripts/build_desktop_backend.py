@@ -35,7 +35,9 @@ def _smoke_test(bundle: Path) -> None:
     env = os.environ.copy()
     env["SPIKEFORGE_DATA_DIR"] = str(RUNTIME / "smoke-data")
     env["SPIKEFORGE_DASHBOARD_DIST"] = str(ROOT / "dist")
-    subprocess.run([str(executable), "--self-test"], env=env, check=True)
+    subprocess.run(
+        [str(executable), "--self-test"], env=env, check=True, timeout=120
+    )
 
     if os.environ.get("SPIKEFORGE_DESKTOP_SKIP_NETWORK_SMOKE") == "1":
         print("network smoke test skipped by SPIKEFORGE_DESKTOP_SKIP_NETWORK_SMOKE")

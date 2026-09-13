@@ -59,6 +59,7 @@ jobs:
             ./_backend/packages/spikeforge-server
 
       - name: Freeze and launch-test backend
+        timeout-minutes: 15
         run: python scripts/build_desktop_backend.py
 
       - name: Package desktop application

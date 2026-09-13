@@ -35,6 +35,30 @@ npm run dev            # Vite dev server on :5173, proxies /ws to :8877
 npm run build
 ```
 
+## Desktop application
+
+SpikeForge Desktop packages this exact dashboard with a local, CPU-only
+SpikeForge engine. Electron supervises the engine on an ephemeral localhost
+port; datasets, checkpoints, hub downloads, and logs live in the operating
+system's per-user application-data directory.
+
+Release builds are produced natively on Linux and Windows by
+`.github/workflows/desktop-release.yml`. Each job freezes the Python/Torch
+backend, launches it on the target runner, verifies `/health`, and only then
+packages the Electron application.
+
+For a local Linux build, install the SpikeForge distributions and PyInstaller
+in a virtual environment, then run:
+
+```bash
+python scripts/build_desktop_backend.py
+npm run desktop:dist
+```
+
+The release artifacts are written to `release/`. The initial desktop edition
+is CPU-only by design; Python and Docker installs remain the supported route
+for CUDA and optional vendor SDKs.
+
 ## Citing
 
 This dashboard is the browser frontend for spikeforge, not an independently

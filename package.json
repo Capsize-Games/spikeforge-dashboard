@@ -2,10 +2,19 @@
   "name": "spikeforge-dashboard",
   "private": true,
   "version": "0.1.0",
+  "description": "Desktop and browser interface for the SpikeForge spiking-neural-network toolkit.",
+  "desktopName": "SpikeForge Desktop",
+  "author": "Capsize LLC <contact@capsizegames.com>",
+  "license": "BSD-3-Clause",
+  "main": "desktop/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "desktop:dev": "electron .",
     "build": "tsc -b && vite build",
+    "desktop:pack": "npm run build && electron-builder --dir --publish never",
+    "desktop:dist": "npm run build && electron-builder --publish never",
+    "desktop:test": "node --test desktop/*.test.cjs",
     "gen:protocol": "node ./protocol/codegen/generate_ts.mjs",
     "preview": "vite preview"
   },
@@ -19,6 +28,8 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
     "json-schema-to-typescript": "^16.0.0",
     "typescript": "^5.6.3",
     "vite": "^6.0.3"

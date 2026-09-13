@@ -1,0 +1,38 @@
+appId: com.capsizegames.spikeforge
+productName: SpikeForge Desktop
+artifactName: "SpikeForge-Desktop-${version}-${os}-${arch}.${ext}"
+asar: true
+compression: normal
+directories:
+  output: release
+files:
+  - desktop/main.cjs
+  - desktop/main_helpers.cjs
+  - desktop/assets/icon.png
+  - LICENSE
+  - NOTICE.md
+  - package.json
+extraResources:
+  - from: desktop/runtime/spikeforge-backend
+    to: backend
+    filter:
+      - "**/*"
+  - from: dist
+    to: web
+    filter:
+      - "**/*"
+linux:
+  syncDesktopName: true
+  target:
+    - AppImage
+  category: Science
+  icon: desktop/assets/icon.png
+  maintainer: Capsize LLC <contact@capsizegames.com>
+win:
+  target:
+    - portable
+    - zip
+  icon: desktop/assets/icon.png
+portable:
+  artifactName: "SpikeForge-Desktop-${version}-windows-${arch}-portable.${ext}"
+publish: null

@@ -32,3 +32,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Test desktop shell helpers
+        run: npm run desktop:test

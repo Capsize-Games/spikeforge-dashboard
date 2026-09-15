@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Capsize-Games/spikeforge
-          ref: 9cc23204eeb36a25595cfee34dc2ba0368399e37
+          ref: 0a4f1feb4ad6ef6321d49aa768aaabd196502b20
           path: _backend
 
       - uses: actions/setup-node@v4

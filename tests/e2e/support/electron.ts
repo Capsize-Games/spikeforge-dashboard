@@ -30,8 +30,10 @@ export interface LaunchRecord {
   dataDir: string;
   dashboardDist: string | null;
   unbuffered: string | null;
-  /** Process id of the backend Electron spawned. */
+  /** Process id of the backend Electron spawned (the shim). */
   pid: number;
+  /** Process id of the Python process the shim spawned, when it recorded one. */
+  backendPid: number | null;
 }
 
 export interface DesktopLaunch {
@@ -112,8 +114,15 @@ export async function launchDesktopApp(
 export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   const electron = launch.app.process();
   const stalled = Symbol("stalled");
+  // Killing the process below makes the losing `close()` promise reject. It
+  // has to be handled here, or that rejection surfaces later with nothing
+  // awaiting it and takes the worker down with it.
+  const closed = launch.app
+    .close()
+    .then(() => "closed" as const)
+    .catch(() => "closed" as const);
   const outcome = await Promise.race([
-    launch.app.close().then(() => "closed" as const),
+    closed,
     new Promise<typeof stalled>((resolve) =>
       setTimeout(() => resolve(stalled), CLOSE_TIMEOUT_MS),
     ),
@@ -123,8 +132,11 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   console.warn(
     `desktop app did not quit within ${CLOSE_TIMEOUT_MS}ms; killing it`,
   );
-  for (const pid of [electron.pid, readBackendPid(launch)]) {
-    if (pid === undefined) continue;
+  // Kill the whole tree, not just Electron. The shim spawns Python as a
+  // grandchild, so killing the shim alone orphans a process that goes on
+  // holding its port and the inherited stdio pipes.
+  for (const pid of [electron.pid, ...recordedPids(launch)]) {
+    if (pid === undefined || pid === null) continue;
     try {
       process.kill(pid, "SIGKILL");
     } catch {
@@ -133,12 +145,13 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   }
 }
 
-/** The supervised backend's process id, when the shim recorded one. */
-function readBackendPid(launch: DesktopLaunch): number | undefined {
+/** The shim's and the backend's process ids, when the shim recorded them. */
+function recordedPids(launch: DesktopLaunch): (number | null)[] {
   try {
-    return launch.readRecord().pid;
+    const record = launch.readRecord();
+    return [record.pid, record.backendPid];
   } catch {
-    return undefined;
+    return [];
   }
 }
 

@@ -61,6 +61,19 @@ function shareCachedDatasets() {
 
 shareCachedDatasets();
 
+const child = spawn(
+  venvPython(),
+  [path.join(REPO_ROOT, "desktop", "backend_entry.py"), ...args],
+  {
+    cwd: SOURCE === "local" ? CORE_REPO : REPO_ROOT,
+    env: process.env,
+    stdio: "inherit",
+  },
+);
+
+// Written after the spawn so it can carry the Python process id as well as
+// this one. A forced cleanup needs the grandchild: killing only the shim
+// orphans the backend, which keeps holding its port.
 const record = process.env.SPIKEFORGE_E2E_LAUNCH_RECORD;
 if (record) {
   writeFileSync(
@@ -72,22 +85,13 @@ if (record) {
         dashboardDist: process.env.SPIKEFORGE_DASHBOARD_DIST ?? null,
         unbuffered: process.env.PYTHONUNBUFFERED ?? null,
         pid: process.pid,
+        backendPid: child.pid ?? null,
       },
       null,
       2,
     ),
   );
 }
-
-const child = spawn(
-  venvPython(),
-  [path.join(REPO_ROOT, "desktop", "backend_entry.py"), ...args],
-  {
-    cwd: SOURCE === "local" ? CORE_REPO : REPO_ROOT,
-    env: process.env,
-    stdio: "inherit",
-  },
-);
 
 // Electron stops the backend with SIGTERM and escalates to SIGKILL. Forward
 // both, or the Python process would outlive the window and hold the port.

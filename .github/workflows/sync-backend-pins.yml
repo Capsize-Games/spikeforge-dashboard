@@ -5,7 +5,17 @@ name: Sync backend pins
 # Capsize-Games/spikeforge, and copying it across by hand is the kind of step
 # that gets skipped -- which would leave the suite quietly testing an engine
 # nobody ships any more. This does it instead, and opens a pull request so the
-# bump is reviewed and its test run is visible before it lands.
+# bump is reviewed before it lands.
+#
+# KNOWN LIMITATION -- the pull request opens, but its checks do not start.
+# GitHub does not trigger workflow runs for events raised by the built-in
+# GITHUB_TOKEN, which is how it avoids workflows recursively triggering
+# themselves. So the bump lands as a pull request with no CI, and a human has
+# to close/reopen it or push to the branch to get it tested. The pull request
+# body says so. To make it fully unattended, swap `github.token` for a
+# personal access token or a GitHub App installation token stored as a secret;
+# that is a credential decision, not a code one, so it is deliberately not
+# made here.
 
 on:
   schedule:
@@ -42,27 +52,31 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Open a pull request for the bump
+      - name: Open or update the pull request for the bump
         if: steps.sync.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          branch="chore/backend-pins-$(date -u +%Y%m%d)"
-
-          # An open pull request from an earlier run already carries this
-          # bump, or will once it is rebased; a second one adds only noise.
-          if gh pr list --head "$branch" --state open --json number \
-              | grep -q '"number"'; then
-            echo "a pull request for $branch is already open"
-            exit 0
-          fi
+          # One stable branch, not a dated one. A dated branch opened a second
+          # pull request every day the first stayed unmerged, and a second run
+          # on the same day exited without picking up a newer manifest.
+          branch="chore/backend-pins"
 
           git config user.name "github-actions[bot]"
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$branch"
+
+          # Rebuild the branch from the current main each run, so the pins are
+          # always the only difference and a merged bump leaves nothing stale.
+          git checkout -B "$branch"
           git add tests/e2e/backend-pins.json
+
+          if git diff --cached --quiet; then
+            echo "pins already match main; nothing to open"
+            exit 0
+          fi
+
           body="tests/e2e/backend-pins.json mirrors the last entry of"
           body="$body compatibility.json in Capsize-Games/spikeforge, the"
           body="$body release combination the Docker image and the desktop"
@@ -70,10 +84,8 @@ jobs:
           git commit \
             -m "Pin the end-to-end suite to the current engine release" \
             -m "$body"
-          git push --set-upstream origin "$branch"
+          git push --force-with-lease --set-upstream origin "$branch"
 
-          # The body records what actually changed, so a reviewer can see the
-          # bump without opening the diff.
           {
             echo "The pinned SpikeForge release combination the end-to-end"
             echo "suite runs against is behind the engine's own manifest."
@@ -82,10 +94,29 @@ jobs:
             cat /tmp/sync.log
             echo '```'
             echo
-            echo "CI re-provisions the backend for the new pins and runs the"
-            echo "full tier, because \`backend-pins.json\` is one of the paths"
-            echo "\`scripts/select_e2e_tier.mjs\` treats as contract-affecting."
+            echo "This pull request is reopened in place by"
+            echo "\`.github/workflows/sync-backend-pins.yml\`; the branch is"
+            echo "rebuilt from \`main\` on every run, so it always carries the"
+            echo "newest pins and never accumulates duplicates."
+            echo
+            echo "> **Checks do not start on their own here.** GitHub does not"
+            echo "> trigger workflow runs for a pull request opened with the"
+            echo "> built-in \`GITHUB_TOKEN\`, to avoid recursive runs. Close"
+            echo "> and reopen this pull request, or push to the branch, to"
+            echo "> run CI against it before merging."
           } > /tmp/body.md
+
+          # An open pull request from an earlier run already points at this
+          # branch, and force-pushing has updated it in place.
+          existing=$(gh pr list --head "$branch" --state open \
+            --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            number=$(gh pr list --head "$branch" --state open \
+              --json number --jq '.[0].number')
+            gh pr edit "$number" --body-file /tmp/body.md
+            echo "updated existing pull request #$number"
+            exit 0
+          fi
 
           gh pr create \
             --title "Pin the end-to-end suite to the current engine release" \

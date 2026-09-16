@@ -36,6 +36,12 @@ jobs:
       - name: Test desktop shell helpers
         run: npm run desktop:test
 
+      - name: Test the repository's own tooling
+        # Unconditional and in the always-run job on purpose. These cover the
+        # tier selector, which decides what the e2e job runs -- gating them on
+        # the selector's own output would let a broken selector excuse itself.
+        run: npm run scripts:test
+
   changes:
     # Which end-to-end tier this change needs, decided from the diff rather
     # than from a human remembering. `scripts/select_e2e_tier.mjs` owns the

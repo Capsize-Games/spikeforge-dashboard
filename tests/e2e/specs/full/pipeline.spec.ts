@@ -8,7 +8,7 @@
  */
 
 import { expect, test } from "../../fixtures/dashboard";
-import { BASELINE } from "../../support/constants";
+import { BASELINE, CONV_BASELINE } from "../../support/constants";
 
 /** A 2-D image frame, which the fully connected baseline cannot consume. */
 const WRONG_SHAPE_INPUT = JSON.stringify({
@@ -74,28 +74,82 @@ test.describe("pipeline", () => {
     ).toContainText(BASELINE);
   });
 
-  test("runs the default input without the user editing it", async ({
+  // Both topologies, because they do not accept the same body: a
+  // convolutional first stage needs [C, H, W] where a fully connected one
+  // takes a flat vector. The template only ever suited the latter.
+  for (const checkpoint of [BASELINE, CONV_BASELINE]) {
+    test(`runs ${checkpoint} from the unedited default input`, async ({
+      dashboard,
+    }) => {
+      await dashboard.page
+        .getByTestId("pipeline-checkpoint")
+        .selectOption(checkpoint);
+      await dashboard.page.getByTestId("pipeline-add-node").click();
+
+      // Deliberately no `fill`: adding a node seeds the body from that
+      // checkpoint's own metadata, and clicking Run has to work from there.
+      // A placeholder that cannot run is what this guards against.
+      const body = await dashboard.page
+        .getByTestId("pipeline-input")
+        .inputValue();
+      const parsed = JSON.parse(body) as {
+        frames: number[][][][];
+        encoded: boolean;
+      };
+      // A raw sample the server encodes and lays out for the topology, not a
+      // pre-encoded vector that only one topology can consume.
+      expect(parsed.encoded).toBe(false);
+      expect(parsed.frames).toHaveLength(1);
+      expect(parsed.frames[0][0]).toHaveLength(28);
+      expect(parsed.frames[0][0][0]).toHaveLength(28);
+
+      await dashboard.page.getByTestId("pipeline-run").click();
+
+      const node = dashboard.pipelinePanel.locator(".pipeline-node");
+      await expect(node).toHaveClass(/status-done/, { timeout: 300_000 });
+      await expect(node.locator(".pipeline-node-predicted")).toHaveText(
+        /class \d/,
+      );
+      await expect(dashboard.page.getByTestId("pipeline-run")).toBeEnabled();
+      await expect(dashboard.errorBanner).toHaveCount(0);
+    });
+  }
+
+  test("seeds the template from the source node, not the first one", async ({
     dashboard,
   }) => {
+    // The source is the node with no incoming edge. Adding the downstream
+    // node first puts it at index 0, which is where the template used to be
+    // read from.
+    await dashboard.page
+      .getByTestId("pipeline-checkpoint")
+      .selectOption(CONV_BASELINE);
+    await dashboard.page.getByTestId("pipeline-add-node").click();
     await dashboard.page
       .getByTestId("pipeline-checkpoint")
       .selectOption(BASELINE);
     await dashboard.page.getByTestId("pipeline-add-node").click();
 
-    // Deliberately no `fill`: adding a node seeds the body from that
-    // checkpoint's own metadata, and clicking Run has to work from there.
-    // A placeholder that cannot run is what this guards against.
+    await expect(
+      dashboard.pipelinePanel.locator(".pipeline-node"),
+    ).toHaveCount(2);
+    // With no edges every node is a source, so the run body has to be one
+    // both accept. Both were trained on 28x28, so there is no mismatch.
+    await expect(
+      dashboard.page.getByTestId("pipeline-source-mismatch"),
+    ).toHaveCount(0);
+
     const body = await dashboard.page
       .getByTestId("pipeline-input")
       .inputValue();
-    const parsed = JSON.parse(body) as {
-      frames: number[][];
-      encoded: boolean;
-    };
-    expect(parsed.encoded).toBe(true);
-    // The baseline was trained at 10 steps on 28x28 samples.
-    expect(parsed.frames).toHaveLength(10);
-    expect(parsed.frames[0]).toHaveLength(784);
+    expect((JSON.parse(body) as { encoded: boolean }).encoded).toBe(false);
+  });
+
+  test("runs a chained graph end to end", async ({ dashboard }) => {
+    await dashboard.page
+      .getByTestId("pipeline-checkpoint")
+      .selectOption(BASELINE);
+    await dashboard.page.getByTestId("pipeline-add-node").click();
 
     await dashboard.page.getByTestId("pipeline-run").click();
 

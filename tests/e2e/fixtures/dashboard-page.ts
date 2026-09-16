@@ -88,18 +88,37 @@ export class DashboardPage extends DashboardShell {
   /**
    * Shrink the run to something a CPU finishes in a reasonable time.
    *
-   * These are the same sliders a user drags; the defaults (3 epochs over 10%
-   * of MNIST at 100 time steps with 256 hidden units) are tuned for a real
-   * session, not for a test. Accuracy is irrelevant here -- what is under test
-   * is that the whole training path runs and reports.
+   * These are the same sliders a user drags. Accuracy is irrelevant here --
+   * what is under test is that the whole training path runs and reports.
+   *
+   * `subset` is a **divisor, not a percentage**: `build_loader` reduces the
+   * split to `len / subset`, and skips the reduction entirely when it is 1.
+   * The maximum is therefore the fastest setting, and 1 is the full
+   * 60,000-sample dataset. Setting it to 1 here cost about sixty times the
+   * work it should have -- which no fully connected run was slow enough to
+   * expose, and no convolutional run was fast enough to survive.
    */
   async useFastTrainingConfig(): Promise<void> {
     await this.tab("model");
     await this.setSlider("epochs", 1);
-    await this.setSlider("subset", 1);
+    await this.setSlider("subset", 50);
     await this.setSlider("num_steps", 10);
     await this.setSlider("hidden", 64);
     await this.setSlider("batch_size", 64);
+  }
+
+  /** The architecture picker, addressed by its guided-tour hook. */
+  get topologySelect(): Locator {
+    return this.tourTarget("topology").locator("select");
+  }
+
+  /** Train the current configuration and wait for the run to finish. */
+  async trainToCompletion(timeout = 900_000): Promise<void> {
+    await expect(this.trainStart).toBeEnabled();
+    await this.trainStart.click();
+    await expect(this.trainStop).toBeEnabled({ timeout: 120_000 });
+    await expect(this.trainStop).toBeDisabled({ timeout });
+    await expect(this.trainStart).toBeEnabled();
   }
 
   get trainStart(): Locator {

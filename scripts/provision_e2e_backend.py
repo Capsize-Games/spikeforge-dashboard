@@ -38,6 +38,7 @@ import venv
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import e2e_backend_stamp as stamp
 from e2e_backend_pins import (
     REPO_ROOT,
     load_pins,
@@ -47,7 +48,6 @@ from e2e_backend_pins import (
 )
 
 DEFAULT_VENV = REPO_ROOT / ".venv-e2e"
-STAMP_NAME = "spikeforge-e2e-stamp.json"
 
 
 def venv_python(venv_dir: Path) -> Path:
@@ -61,54 +61,6 @@ def _run(command: List[str]) -> None:
     """Run a provisioning command, streaming its output."""
     print(f"$ {' '.join(command)}", flush=True)
     subprocess.run(command, check=True)
-
-
-def _git_head(repo: Path) -> Optional[str]:
-    """Return the checkout's HEAD commit, or None outside a git tree."""
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(repo), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
-    return result.stdout.strip()
-
-
-def _stamp(
-    source: str, pins: Dict[str, object], repo: Optional[Path]
-) -> Dict[str, object]:
-    """Describe the install so a matching one can be skipped.
-
-    A local checkout stamps its HEAD commit, so a rebuilt core repository
-    reprovisions instead of silently testing yesterday's code.
-    """
-    stamp: Dict[str, object] = {
-        "source": source,
-        "python": platform.python_version(),
-    }
-    if source == "pypi":
-        stamp["packages"] = pins.get("packages")
-        stamp["extras"] = pins.get("extras", {})
-    else:
-        stamp["repo"] = str(repo)
-        stamp["head"] = _git_head(repo) if repo else None
-    return stamp
-
-
-def _read_stamp(venv_dir: Path) -> Optional[Dict[str, object]]:
-    """Return the stamp of a previous provision, when one is present."""
-    path = venv_dir / STAMP_NAME
-    if not path.is_file():
-        return None
-    try:
-        with path.open(encoding="utf-8") as handle:
-            loaded = json.load(handle)
-    except json.JSONDecodeError:
-        return None
-    return loaded if isinstance(loaded, dict) else None
 
 
 def _ensure_venv(venv_dir: Path, force: bool) -> Path:
@@ -162,24 +114,34 @@ def _verify(python: Path, source: str, repo: Optional[Path]) -> None:
     )
 
 
+def _already_provisioned(
+    venv_dir: Path, wanted: Dict[str, object], force: bool
+) -> Optional[Path]:
+    """Return the interpreter when a verified install already matches."""
+    if force or stamp.read(venv_dir) != wanted:
+        return None
+    python = venv_python(venv_dir)
+    return python if python.is_file() else None
+
+
 def provision(
     venv_dir: Path, source: str, repo: Optional[Path], force: bool
 ) -> Path:
     """Create or refresh the environment and return its interpreter."""
     pins = load_pins()
-    wanted = _stamp(source, pins, repo)
+    wanted = stamp.describe(source, pins, repo)
+    existing = _already_provisioned(venv_dir, wanted, force)
+    if existing is not None:
+        print(f"e2e backend already provisioned: {venv_dir}")
+        return existing
 
-    if not force and _read_stamp(venv_dir) == wanted:
-        python = venv_python(venv_dir)
-        if python.is_file():
-            print(f"e2e backend already provisioned: {venv_dir}")
-            return python
-
+    # Clear first and stamp last: a failed verification must not leave a
+    # success marker for the next run to short-circuit on.
+    stamp.clear(venv_dir)
     python = _ensure_venv(venv_dir, force)
     _install(python, source, pins, repo)
-    with (venv_dir / STAMP_NAME).open("w", encoding="utf-8") as handle:
-        json.dump(wanted, handle, indent=2, sort_keys=True)
     _verify(python, source, repo)
+    stamp.write(venv_dir, wanted)
     print(f"e2e backend ready: {python}")
     return python
 

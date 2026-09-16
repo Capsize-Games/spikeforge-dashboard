@@ -11,7 +11,8 @@
  */
 
 import { expect, test } from "../../fixtures/dashboard";
-import { BASELINE } from "../../support/constants";
+import { BASELINE, CONV_BASELINE } from "../../support/constants";
+
 
 test("trains a model and saves it as the baseline checkpoint", async ({
   dashboard,
@@ -61,5 +62,30 @@ test("trains a model and saves it as the baseline checkpoint", async ({
   await expect
     .poll(() => dashboard.savedModels(), { timeout: 60_000 })
     .toContain(BASELINE);
+  await expect(dashboard.errorBanner).toHaveCount(0);
+});
+
+test("trains a convolutional checkpoint too", async ({ dashboard }) => {
+  // The two topologies do not accept the same run body: a convolutional first
+  // stage needs [C, H, W] where a fully connected one takes a flat vector.
+  // Without a convolutional checkpoint in the tier, a template that only
+  // suited fc_legacy passed every test and failed every real conv run.
+  await dashboard.waitForBootstrap();
+  await dashboard.useFastTrainingConfig();
+
+  await dashboard.topologySelect.selectOption("conv_net");
+  await expect(dashboard.topologySelect).toHaveValue("conv_net");
+
+  await dashboard.trainToCompletion();
+  await dashboard.saveModel(CONV_BASELINE);
+
+  await expect
+    .poll(() => dashboard.savedModels(), { timeout: 60_000 })
+    .toContain(CONV_BASELINE);
+
+  await dashboard.loadModel(CONV_BASELINE);
+  await expect(dashboard.currentModel).toHaveText(CONV_BASELINE, {
+    timeout: 120_000,
+  });
   await expect(dashboard.errorBanner).toHaveCount(0);
 });

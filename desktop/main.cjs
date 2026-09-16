@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, shell } = require("electron");
+const { app, BrowserWindow, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -10,6 +10,7 @@ const {
   isSafeExternalUrl,
   reservePort,
 } = require("./main_helpers.cjs");
+const { failedPage, pageUrl, startingPage } = require("./startup_page.cjs");
 
 const HOST = "127.0.0.1";
 const HEALTH_TIMEOUT_MS = 120_000;
@@ -20,18 +21,16 @@ let backend = null;
 let mainWindow = null;
 let quitting = false;
 let backendLog = null;
+/** How the engine stopped, once it has, so polling can give up at once. */
+let backendStopped = null;
+/** True once the window is showing the dashboard rather than a status page. */
+let serving = false;
 
 function resourcePath(...parts) {
   const root = app.isPackaged
     ? process.resourcesPath
     : path.join(__dirname, "runtime");
   return path.join(root, ...parts);
-}
-
-function openBackendLog() {
-  if (backendLog && fs.existsSync(backendLog)) {
-    shell.showItemInFolder(backendLog);
-  }
 }
 
 function spawnBackend(port) {
@@ -75,18 +74,14 @@ function spawnBackend(port) {
     logStream.write(`\nbackend exited: code=${code} signal=${signal}\n`);
     logStream.end();
     if (backend === child) backend = null;
-    if (!quitting && code !== 0) {
-      dialog.showMessageBox({
-        type: "error",
-        title: "SpikeForge backend stopped",
-        message: "The local SpikeForge engine stopped unexpectedly.",
-        detail: `Exit code: ${code ?? "unknown"}. The backend log contains more information.`,
-        buttons: ["Open log", "Quit"],
-        defaultId: 0,
-      }).then(({ response }) => {
-        if (response === 0) openBackendLog();
-        app.quit();
-      });
+    backendStopped = { code, signal };
+    // While starting, `waitForHealth` turns this into the reported failure.
+    // Once the dashboard is on screen nothing else is watching, so the window
+    // has to be told here instead.
+    if (!quitting && code !== 0 && serving) {
+      showFailure(
+        `The engine stopped unexpectedly (exit code ${code ?? "unknown"}).`,
+      );
     }
   });
   return child;
@@ -96,6 +91,18 @@ function waitForHealth(port) {
   const deadline = Date.now() + HEALTH_TIMEOUT_MS;
   return new Promise((resolve, reject) => {
     const poll = () => {
+      // An engine that has already stopped is never going to answer, and
+      // waiting out the full timeout only delays telling the user why.
+      if (backendStopped) {
+        const { code } = backendStopped;
+        reject(
+          new Error(
+            `The engine stopped before it was ready ` +
+              `(exit code ${code ?? "unknown"}).`,
+          ),
+        );
+        return;
+      }
       if (Date.now() >= deadline) {
         reject(new Error("The SpikeForge engine did not become ready within two minutes."));
         return;
@@ -145,8 +152,25 @@ function createWindow(port) {
   window.on("closed", () => {
     if (mainWindow === window) mainWindow = null;
   });
-  window.loadURL(`http://${HOST}:${port}`);
+  // Shown straight away, before the engine is asked for anything. Waiting for
+  // `/health` to open a window is what made a failed start indistinguishable
+  // from a program that never ran.
+  window.loadURL(pageUrl(startingPage()));
   return window;
+}
+
+/**
+ * Report a failed start in the window, rather than in a modal.
+ *
+ * The window stays open afterwards so the message and the log path can be
+ * read and copied. Quitting is left to the user.
+ */
+function showFailure(message) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  serving = false;
+  mainWindow.loadURL(pageUrl(failedPage(message, backendLog)));
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
 }
 
 async function stopBackend() {
@@ -183,22 +207,17 @@ async function stopBackend() {
 }
 
 async function start() {
+  const port = await reservePort(HOST);
+  // The window comes first so there is something on screen for the whole of
+  // startup, including when startup is what fails.
+  mainWindow = createWindow(port);
   try {
-    const port = await reservePort(HOST);
     backend = spawnBackend(port);
     await waitForHealth(port);
-    mainWindow = createWindow(port);
+    serving = true;
+    mainWindow.loadURL(`http://${HOST}:${port}`);
   } catch (error) {
-    const result = await dialog.showMessageBox({
-      type: "error",
-      title: "SpikeForge could not start",
-      message: "SpikeForge Desktop could not start its local engine.",
-      detail: error instanceof Error ? error.message : String(error),
-      buttons: backendLog ? ["Open log", "Quit"] : ["Quit"],
-      defaultId: 0,
-    });
-    if (backendLog && result.response === 0) openBackendLog();
-    app.quit();
+    showFailure(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -212,7 +231,16 @@ if (!hasLock) {
       mainWindow.focus();
     }
   });
-  app.whenReady().then(start);
+  // Reserving a port or constructing the window can fail before `start` has
+  // anywhere to report to, and an unhandled rejection there would take the
+  // application down with no window and no message -- the exact failure this
+  // startup path exists to remove.
+  app.whenReady()
+    .then(start)
+    .catch((error) => {
+      if (!mainWindow) mainWindow = createWindow(0);
+      showFailure(error instanceof Error ? error.message : String(error));
+    });
 }
 
 app.on("window-all-closed", () => app.quit());

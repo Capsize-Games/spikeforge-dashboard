@@ -90,9 +90,12 @@ export async function launchDesktopApp(
       SPIKEFORGE_E2E_LAUNCH_RECORD: recordPath,
     },
   });
-  // The window is only created after `/health` answers, so waiting for it is
-  // also the assertion that the backend came up.
-  await app.firstWindow({ timeout });
+  // The window opens immediately on a startup page, so its existence no
+  // longer says anything about the engine. The navigation to the local
+  // server is what proves `/health` answered; on a failed start the window
+  // stays on a `data:` URL and this times out with the window's own message.
+  const window = await app.firstWindow({ timeout });
+  await window.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\//, { timeout });
 
   return {
     app,

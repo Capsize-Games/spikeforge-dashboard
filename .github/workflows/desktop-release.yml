@@ -68,12 +68,47 @@ jobs:
       - name: Package desktop application
         run: npx electron-builder --publish never
 
+      # The freeze step above proves the engine runs where it was built. This
+      # proves it still runs from inside the package, launched by the packaged
+      # Electron binary -- the only arrangement a user ever sees, and the one
+      # nothing checked before. A failure here prints the engine's own log.
+      - name: Launch the packaged application
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          app=release/linux-unpacked
+          [ -d release/win-unpacked ] && app=release/win-unpacked
+          # A build machine with no session needs a virtual display; the
+          # self-hosted runner has a real one and must not be wrapped.
+          if [ "$RUNNER_OS" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
+            xvfb-run -a node scripts/smoke_packaged_desktop.mjs --app "$app"
+          else
+            node scripts/smoke_packaged_desktop.mjs --app "$app"
+          fi
+
+      # An AppImage is only useful if it is executable, and neither a browser
+      # download nor a GitHub release asset carries a permission bit -- the
+      # file arrives as 0644 and every launch fails with "Permission denied".
+      # A tar.gz records the mode, so the extracted AppImage runs as built.
+      # The AppImage itself still ships for people who prefer it and know to
+      # run chmod.
+      - name: Archive the AppImage with its permissions
+        if: matrix.channel == 'linux-x64'
+        shell: bash
+        run: |
+          appimage=$(find release -maxdepth 1 -name '*.AppImage' -print -quit)
+          chmod +x "$appimage"
+          tar -czf "${appimage%.AppImage}.tar.gz" \
+            -C release "$(basename "$appimage")"
+          tar -tvzf "${appimage%.AppImage}.tar.gz"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: spikeforge-desktop-${{ matrix.channel }}
           path: |
             release/*.AppImage
+            release/*.tar.gz
             release/*.exe
           if-no-files-found: error
 

@@ -8,6 +8,7 @@ directories:
 files:
   - desktop/main.cjs
   - desktop/main_helpers.cjs
+  - desktop/startup_page.cjs
   - desktop/assets/icon.png
   - LICENSE
   - NOTICE.md

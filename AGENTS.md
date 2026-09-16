@@ -59,6 +59,30 @@ only `src/` selects smoke; touching only documentation selects neither.
 `scripts/select_e2e_tier.test.mjs` pins those rules — change them there, with a
 test, rather than by adding a manual CI step.
 
+## Public-facing copy
+
+This repository contains public-facing prose: the dashboard's own interface
+labels and panel text (`src/i18n/`), `README.md`, and the store pages under
+`marketing/`. Before drafting or editing any of it, read
+[`COPY_POLICY.md`](COPY_POLICY.md) in this repository. It is the full policy;
+what follows is a reminder of the parts that come up most here, not a
+replacement for reading it.
+
+- Interface labels name the destination, content, or action in familiar terms.
+  Button text describes what the button does.
+- Do not invent features, quantities, benchmarks, licensing terms, or
+  audiences. Check the implemented behavior. Existing AI-generated wording is
+  not a source of verified facts.
+- Do not write text to fill a component. Deletion is a valid edit.
+- Keep source attribution and required disclosures, including the pre-1.0 and
+  measurement caveats. Do not delete them to shorten copy.
+- Preserve approved wording during refactoring unless the task requires a
+  change or behavior made it inaccurate.
+
+The interface is translated into eight languages. An English change that is not
+carried into `src/i18n/locales/` leaves the other locales stating something
+different, so treat a copy change as a change to every locale.
+
 ## Code style — hard limits
 
 These mirror `rules.md` in the core repository and are enforced by review.

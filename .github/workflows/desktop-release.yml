@@ -38,10 +38,15 @@ jobs:
           node-version: "22"
           cache: npm
 
+      # No `cache: pip`. The self-hosted runner's `_work` is a symlink onto
+      # another drive, and the action's dependency-file glob does not follow
+      # it, so it finds no pyproject.toml and fails the job outright -- before
+      # anything is built. The engine install below pulls Torch from its own
+      # index and installs the packages by path, so there was little for a
+      # hash-keyed pip cache to hold on to anyway.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
 
       - name: Install dashboard dependencies
         run: npm ci

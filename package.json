@@ -15,7 +15,7 @@
     "desktop:pack": "npm run build && electron-builder --dir --publish never",
     "desktop:dist": "npm run build && electron-builder --publish never",
     "desktop:test": "node --test desktop/*.test.cjs",
-    "scripts:test": "node --test scripts/*.test.mjs",
+    "scripts:test": "node --test scripts/*.test.mjs && node --experimental-strip-types --test \"src/**/*.test.ts\" && python3 scripts/provision_e2e_backend_test.py",
     "e2e:install": "playwright install --with-deps chromium",
     "e2e:backend": "python3 scripts/provision_e2e_backend.py",
     "e2e:pins:check": "node scripts/sync_backend_pins.mjs --check",

@@ -21,7 +21,7 @@ end-to-end suite, which runs the built app against a real server.
 npm ci
 npm run build              # tsc -b && vite build; must pass before you are done
 npm run desktop:test       # Electron shell helpers
-npm run scripts:test       # tooling in scripts/
+npm run scripts:test       # tooling + pure src/ helpers (node, TS, python)
 npm run e2e:typecheck      # type-checks the e2e suite (not covered by build)
 
 npm run e2e:install        # Playwright browser, once per machine
@@ -52,12 +52,27 @@ Editing the versions by hand is not wrong so much as pointless — the next sync
 overwrites it. Change `scripts/sync_backend_pins.mjs` if the rule itself is
 wrong.
 
+The sync uses one stable branch (`chore/backend-pins`) rebuilt from `main` each
+run, so repeated runs update a single pull request instead of opening a new one
+per day. **Its checks do not start on their own:** GitHub does not trigger
+workflow runs for events raised by the built-in `GITHUB_TOKEN`. Close and
+reopen that pull request, or push to the branch, to run CI against it. Making
+it fully unattended needs a PAT or App token in a secret.
+
 **Which end-to-end tier runs in CI is decided from the diff**, by
-`scripts/select_e2e_tier.mjs`. Touching the protocol, the pinned engine, the
-desktop shell, or the training/pipeline paths selects the full tier; touching
-only `src/` selects smoke; touching only documentation selects neither.
-`scripts/select_e2e_tier.test.mjs` pins those rules — change them there, with a
-test, rather than by adding a manual CI step.
+`scripts/select_e2e_tier.mjs`. The rules are **conservative by default**:
+anything that can reach the application or the suite selects the full tier
+unless it is on a short explicit list that cannot (styles, locales, prose).
+
+That direction matters. An earlier version listed what *needed* the full tier,
+and every omission failed dangerously — a change to a full-tier spec, to the
+fixture every spec shares, or to the selector itself all selected a cheaper
+tier than the change deserved. If you add a rule, add it to the exclusions only
+when you are sure the smoke tier covers that file.
+
+`scripts/select_e2e_tier.test.mjs` pins the rules, including those regressions.
+`npm run scripts:test` runs unconditionally in CI's always-run job, so a broken
+selector cannot excuse itself from its own tests.
 
 ## Public-facing copy
 

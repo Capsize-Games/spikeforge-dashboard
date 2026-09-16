@@ -7,6 +7,15 @@
  * every change wastes minutes on a typo in a README; running it on none means
  * a protocol change ships untested. So the diff picks.
  *
+ * The rules are deliberately **conservative by default**: anything that can
+ * reach the application or the suite selects the full tier unless it is on an
+ * explicit list of files that cannot. An earlier version inverted this --
+ * listing what needed the full tier -- and the omissions were exactly the
+ * dangerous ones: a change to a full-tier spec, to the fixture every spec
+ * shares, or to this file itself all selected a cheaper tier than the change
+ * deserved. A rule that has to enumerate every risky path will always be one
+ * path behind.
+ *
  * Reads changed paths on stdin (one per line, as `git diff --name-only`
  * produces) and writes `tier=<none|smoke|full>` plus the matching booleans to
  * `$GITHUB_OUTPUT`, or to stdout when running locally.
@@ -18,49 +27,72 @@ import { appendFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 /**
- * Changes that can break the client/server contract or the desktop shell, and
- * that the smoke tier alone would not catch. A protocol schema, the pinned
- * engine, the training or pipeline paths, or the Electron main process all
- * need a run that actually trains, saves, loads, and infers.
+ * Paths that cannot change what the application does: prose, store pages, and
+ * images. Checked first, so `tests/e2e/README.md` costs nothing even though
+ * everything else under `tests/e2e/` is treated as load-bearing.
  */
-const NEEDS_FULL = [
-  /^protocol\//,
-  /^tests\/e2e\/backend-pins\.json$/,
-  /^desktop\//,
-  /^src\/protocol\//,
-  /^src\/useWebSocket\.ts$/,
-  /^src\/useTraining\.ts$/,
-  /^src\/usePipeline\.ts$/,
-  /^src\/modelLoad\.ts$/,
-  /^src\/hooks\/useServerBootstrap\.ts$/,
-  /^src\/hooks\/useModelActions\.ts$/,
-  /^src\/components\/pipelineInput\.ts$/,
-  /^scripts\/(provision_e2e_backend|e2e_backend_pins)\./,
+const NO_TESTS = [
+  /\.md$/,
+  /^marketing\//,
+  /^images\//,
+  /^public\/.*\.(png|jpe?g|svg|ico|webp)$/,
+  /^LICENSE$/,
+  /^NOTICE/,
+  /^\.gitignore$/,
+  /^\.github\/(?!workflows\/(ci|electron-e2e)\.yml)/,
 ];
 
-/** Anything else that can change what the browser renders or how it is built. */
-const NEEDS_SMOKE = [
-  /^src\//,
-  /^index\.html$/,
+/**
+ * Presentational surfaces the smoke tier covers on its own. Everything here
+ * renders but drives no workflow, so a break shows up as soon as the app
+ * loads. Keep this list short and specific; when in doubt leave a path off it
+ * and let it fall through to the full tier.
+ */
+const SMOKE_ONLY = [
+  /^src\/styles/,
+  /^src\/i18n\/locales\//,
+  /^src\/components\/chartColors\.ts$/,
   /^public\//,
+];
+
+/**
+ * Everything that can reach the application under test, the suite, or the
+ * machinery that runs it. This is intentionally broad.
+ */
+const TOUCHES_APP = [
+  /^src\//,
   /^tests\/e2e\//,
+  /^desktop\//,
+  /^protocol\//,
+  /^index\.html$/,
   /^playwright\.config\.ts$/,
   /^package(-lock)?\.json$/,
-  /^tsconfig\.json$/,
+  /^tsconfig.*\.json$/,
   /^vite\.config\.ts$/,
-  /^scripts\/run_e2e_server\.mjs$/,
-  /^\.github\/workflows\/ci\.yml$/,
+  // The suite's own tooling: the tier selector, the server runner, and the
+  // backend provisioner. A change here can silently change what runs.
+  /^scripts\/(select_e2e_tier|run_e2e_server|sync_backend_pins)/,
+  /^scripts\/(provision_e2e_backend|e2e_backend_pins|e2e_backend_stamp)/,
+  /^\.github\/workflows\/(ci|electron-e2e)\.yml$/,
 ];
 
-/** Return the tier a set of changed paths calls for. */
-export function selectTier(paths) {
-  if (paths.some((file) => NEEDS_FULL.some((rule) => rule.test(file)))) {
-    return "full";
-  }
-  if (paths.some((file) => NEEDS_SMOKE.some((rule) => rule.test(file)))) {
-    return "smoke";
-  }
+/** What one changed path calls for on its own. */
+function classify(file) {
+  if (NO_TESTS.some((rule) => rule.test(file))) return "none";
+  if (SMOKE_ONLY.some((rule) => rule.test(file))) return "smoke";
+  if (TOUCHES_APP.some((rule) => rule.test(file))) return "full";
   return "none";
+}
+
+/** Return the tier a set of changed paths calls for: the most expensive one. */
+export function selectTier(paths) {
+  let tier = "none";
+  for (const file of paths) {
+    const needed = classify(file);
+    if (needed === "full") return "full";
+    if (needed === "smoke") tier = "smoke";
+  }
+  return tier;
 }
 
 function readStdin() {

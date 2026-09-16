@@ -72,9 +72,14 @@ after a dropped socket, all six tabs rendering, the four bootstrap requests
 landing in the interface, and the protocol version handshake in both directions.
 It does not train anything.
 
-**`full-setup`** trains a small model through the interface and saves it as
-`e2e-baseline`. It is both the training coverage and the fixture the rest of the
-tier loads, so one CPU training run serves every spec.
+**`full-setup`** trains two small models through the interface: `e2e-baseline`
+(`fc_legacy`) and `e2e-conv` (`conv_net`). It is both the training coverage and
+the fixture the rest of the tier loads.
+
+Two topologies, not one, because they do not accept the same run body: a
+convolutional first stage needs `[C, H, W]` where a fully connected one takes a
+flat vector. A suite with only the fully connected checkpoint passed while the
+Pipeline tab's default input could not run against a conv model at all.
 
 **`full`** covers the checkpoint lifecycle, inference, deployment reports and
 energy estimates, the hub catalog, and pipeline runs. It depends on `smoke` and

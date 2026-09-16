@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { HelpTip } from "./HelpTip";
-import { inputTemplate } from "./pipelineInput";
+import { inputContract, inputTemplate } from "./pipelineInput";
 import type { PipelineRunInput } from "../pipelineTypes";
 import type { SavedModel } from "../types";
 
@@ -12,8 +12,8 @@ const INPUT_HELP =
   "sample). Adding a node fills this in for that checkpoint.";
 
 interface Props {
-  /** Checkpoint the template is shaped for; undefined until one is added. */
-  source: SavedModel | undefined;
+  /** Checkpoints a run feeds: the nodes with no incoming edge. */
+  sources: SavedModel[];
   connected: boolean;
   running: boolean;
   /** True once the graph has a node, so a run has something to feed. */
@@ -32,7 +32,7 @@ interface Props {
  * the body is theirs and is never overwritten.
  */
 export function PipelineRunControls({
-  source,
+  sources,
   connected,
   running,
   runnable,
@@ -40,6 +40,7 @@ export function PipelineRunControls({
   onRun,
   onStop,
 }: Props) {
+  const source = sources[0];
   const [text, setText] = useState(() => inputTemplate(source));
   const [error, setError] = useState<string | null>(null);
   const [edited, setEdited] = useState(false);
@@ -51,6 +52,12 @@ export function PipelineRunControls({
     setSeededFor(source?.name ?? null);
     setText(inputTemplate(source));
   }
+
+  // One body feeds every source node, so sources that disagree about their
+  // input cannot all be satisfied. Say so rather than seeding from whichever
+  // one happens to come first and letting the rest fail inside Torch.
+  const contracts = [...new Set(sources.map(inputContract))];
+  const mismatched = contracts.length > 1;
 
   const run = () => {
     let parsed: PipelineRunInput;
@@ -85,6 +92,13 @@ export function PipelineRunControls({
         data-testid="pipeline-input"
         aria-label="Pipeline run input (JSON)"
       />
+      {mismatched && (
+        <div className="mismatch" data-testid="pipeline-source-mismatch">
+          This graph has source nodes with different input shapes (
+          {contracts.join(", ")}). One run body cannot satisfy all of them;
+          give them separate runs, or chain them so only one takes the input.
+        </div>
+      )}
       {error && <div className="mismatch">{error}</div>}
       <div className="control-row">
         <button

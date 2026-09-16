@@ -22,6 +22,7 @@ import {
   type PipelineFlowNodeData,
 } from "./PipelineFlowNode";
 import { PipelineRunControls } from "./PipelineRunControls";
+import { sourceModels } from "./pipelineSources";
 import type { PipelineEdge, PipelineNode } from "../usePipeline";
 import type {
   PipelineGraph,
@@ -136,11 +137,9 @@ export function PipelinePanel({
     [graph.edges, selectedEdge],
   );
 
-  // Source nodes are what a run feeds, so the first one's checkpoint is the
-  // shape the run body has to match.
-  const sourceModel = models.find(
-    (model) => model.name === graph.nodes?.[0]?.checkpoint,
-  );
+  // A run feeds every node with no incoming edge, so connectivity decides
+  // which checkpoints the body has to satisfy -- not position in the array.
+  const sources = sourceModels(graph, models);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -331,7 +330,7 @@ export function PipelinePanel({
         )}
 
         <PipelineRunControls
-          source={sourceModel}
+          sources={sources}
           connected={connected}
           running={running}
           runnable={(graph.nodes?.length ?? 0) > 0}

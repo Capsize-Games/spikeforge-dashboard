@@ -54,10 +54,23 @@ wrong.
 
 The sync uses one stable branch (`chore/backend-pins`) rebuilt from `main` each
 run, so repeated runs update a single pull request instead of opening a new one
-per day. **Its checks do not start on their own:** GitHub does not trigger
-workflow runs for events raised by the built-in `GITHUB_TOKEN`. Close and
-reopen that pull request, or push to the branch, to run CI against it. Making
-it fully unattended needs a PAT or App token in a secret.
+per day. It also moves the engine commit the desktop application builds from,
+in the same pull request — see below.
+
+**The engine commit in `desktop-release.yml` is derived, not chosen.** It is
+whatever `spikeforge-v<version>` points at for the `spikeforge` version in
+`backend-pins.json`, so one version governs both the end-to-end suite and the
+packaged application. `npm run e2e:pins:check` fails when they disagree.
+Picking a SHA by hand is how that pin ended up on a commit that was not on the
+engine's `main` at all — 92 ahead, 99 behind, orphaned by a history rewrite. It
+still built, so nothing complained for a release and a half.
+
+**A release is cut by workflow, not by hand.** `cut-release.yml` raises the
+version as an auto-merging pull request; `tag-on-version-change.yml` pushes the
+tag once it lands; `desktop-release.yml` builds from that tag; and
+`release-verify.yml` downloads the published files afterwards and launches them
+on both operating systems. Running `npm version` and `git tag` yourself skips
+the check that main is green.
 
 **Which end-to-end tier runs in CI is decided from the diff**, by
 `scripts/select_e2e_tier.mjs`. The rules are **conservative by default**:
@@ -73,6 +86,15 @@ when you are sure the smoke tier covers that file.
 `scripts/select_e2e_tier.test.mjs` pins the rules, including those regressions.
 `npm run scripts:test` runs unconditionally in CI's always-run job, so a broken
 selector cannot excuse itself from its own tests.
+
+**Every automated pull request and tag needs `AUTOMATION_TOKEN`.** GitHub does
+not start workflow runs for events raised by the built-in `GITHUB_TOKEN`: a
+pull request opened with it gets no checks and can never satisfy auto-merge,
+and a tag pushed with it builds nothing. `sync-backend-pins.yml`,
+`cut-release.yml`, `tag-on-version-change.yml` and `agent-issue.yml` all use
+that secret, and refuse or warn rather than degrading quietly without it. An
+automated pull request sitting with no checks means the secret is missing —
+that is the cause, and it is not worth looking for another one.
 
 ## Public-facing copy
 

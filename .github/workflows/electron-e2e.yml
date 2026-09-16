@@ -48,7 +48,12 @@ jobs:
           path: |
             .venv-e2e
             .e2e-data
-          key: e2e-${{ runner.os }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
+          # Keyed by runner.name, not just runner.os: .venv-e2e's own python
+          # binary has its interpreter's absolute path baked into its RPATH,
+          # so a cache built on one machine (or a GitHub-hosted runner) is
+          # not just stale but unusable on another -- it fails with
+          # "error while loading shared libraries", not a clean cache miss.
+          key: e2e-${{ runner.name }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
 
       - name: Provision the SpikeForge backend
         run: npm run e2e:backend

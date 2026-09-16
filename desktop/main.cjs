@@ -6,6 +6,7 @@ const path = require("node:path");
 
 const {
   backendFilename,
+  hasExited,
   isSafeExternalUrl,
   reservePort,
 } = require("./main_helpers.cjs");
@@ -151,7 +152,7 @@ function createWindow(port) {
 async function stopBackend() {
   const child = backend;
   backend = null;
-  if (!child || child.exitCode !== null) return;
+  if (!child || hasExited(child)) return;
 
   await new Promise((resolve) => {
     let settled = false;
@@ -169,12 +170,15 @@ async function stopBackend() {
     } else {
       child.kill("SIGTERM");
     }
+    // Deliberately not unref'd: this timer is the only escape when the child
+    // never reports an exit, and an unref'd timer does not hold the event
+    // loop open. Quitting would then wait on a promise nothing can settle.
     setTimeout(() => {
-      if (process.platform !== "win32" && child.exitCode === null) {
+      if (process.platform !== "win32" && !hasExited(child)) {
         child.kill("SIGKILL");
       }
       finish();
-    }, SHUTDOWN_TIMEOUT_MS).unref();
+    }, SHUTDOWN_TIMEOUT_MS);
   });
 }
 

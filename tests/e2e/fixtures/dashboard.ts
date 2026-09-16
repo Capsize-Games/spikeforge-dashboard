@@ -11,7 +11,11 @@ import { expect, test as base } from "@playwright/test";
 import type { ElectronApplication } from "@playwright/test";
 
 import { DashboardPage } from "./dashboard-page";
-import { launchDesktopApp, onlyInElectron } from "../support/electron";
+import {
+  closeDesktopApp,
+  launchDesktopApp,
+  onlyInElectron,
+} from "../support/electron";
 import type { LaunchRecord } from "../support/electron";
 
 /** Which shell a project runs its specs in. */
@@ -56,7 +60,7 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
       const launch = await launchDesktopApp(`w${workerInfo.workerIndex}`);
       launchedRecord = launch.readRecord();
       await use(launch.app);
-      await launch.app.close();
+      await closeDesktopApp(launch);
     },
     { scope: "worker" },
   ],

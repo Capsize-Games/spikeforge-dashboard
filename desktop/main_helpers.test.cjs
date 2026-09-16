@@ -3,6 +3,7 @@ const test = require("node:test");
 
 const {
   backendFilename,
+  hasExited,
   isSafeExternalUrl,
   reservePort,
 } = require("./main_helpers.cjs");
@@ -25,4 +26,14 @@ test("reserves an ephemeral localhost port", async () => {
   const port = await reservePort();
   assert.ok(Number.isInteger(port));
   assert.ok(port > 0 && port <= 65535);
+});
+
+test("treats a signalled process as finished", () => {
+  // A child killed by a signal reports a null exitCode, so checking that
+  // alone reads it as still running -- and `stopBackend` would then wait for
+  // an `exit` event that has already fired, hanging the quit.
+  assert.equal(hasExited({ exitCode: null, signalCode: "SIGTERM" }), true);
+  assert.equal(hasExited({ exitCode: 0, signalCode: null }), true);
+  assert.equal(hasExited({ exitCode: 1, signalCode: null }), true);
+  assert.equal(hasExited({ exitCode: null, signalCode: null }), false);
 });

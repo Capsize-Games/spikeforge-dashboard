@@ -42,6 +42,9 @@ export interface DesktopLaunch {
   readRecord(): LaunchRecord;
 }
 
+/** How long a graceful quit is given before the process is killed outright. */
+const CLOSE_TIMEOUT_MS = 30_000;
+
 /**
  * Variables that make the Electron binary behave as plain Node.
  *
@@ -95,6 +98,48 @@ export async function launchDesktopApp(
     readRecord: () =>
       JSON.parse(readFileSync(recordPath, "utf8")) as LaunchRecord,
   };
+}
+
+/**
+ * Shut a launched application down, and make sure it is really gone.
+ *
+ * `app.close()` waits for Electron to quit of its own accord, which is the
+ * behaviour `specs/electron/shell.spec.ts` asserts explicitly. Here the point
+ * is only to clean up after a worker, so a quit that stalls must not be able
+ * to fail an otherwise-passing run: past the deadline the process is killed,
+ * and the backend it supervised is killed with it so no orphan holds a port.
+ */
+export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
+  const electron = launch.app.process();
+  const stalled = Symbol("stalled");
+  const outcome = await Promise.race([
+    launch.app.close().then(() => "closed" as const),
+    new Promise<typeof stalled>((resolve) =>
+      setTimeout(() => resolve(stalled), CLOSE_TIMEOUT_MS),
+    ),
+  ]);
+  if (outcome !== stalled) return;
+
+  console.warn(
+    `desktop app did not quit within ${CLOSE_TIMEOUT_MS}ms; killing it`,
+  );
+  for (const pid of [electron.pid, readBackendPid(launch)]) {
+    if (pid === undefined) continue;
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // Already gone, which is the outcome this is reaching for anyway.
+    }
+  }
+}
+
+/** The supervised backend's process id, when the shim recorded one. */
+function readBackendPid(launch: DesktopLaunch): number | undefined {
+  try {
+    return launch.readRecord().pid;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

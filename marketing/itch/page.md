@@ -40,6 +40,6 @@ free at <https://github.com/capsize-games/spikeforge>.
 This itch.io release is pay what you want. Contributions support signed builds,
 cross-platform testing, tutorials, and continued development.
 
-Documentation: <https://spikeforge.net/docs/>
+Documentation: <https://docs.spikeforge.net/>
 
 Community: <https://capsizegames.com/discord>

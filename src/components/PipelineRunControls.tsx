@@ -6,10 +6,10 @@ import type { PipelineRunInput } from "../pipelineTypes";
 import type { SavedModel } from "../types";
 
 const INPUT_HELP =
-  "Feeds every node with no incoming edge, with the same body " +
-  "spikeforge-serve reads from stdin. With encoded: true each frame is one " +
-  "spike vector flattened to the checkpoint's input width (784 for a 28x28 " +
-  "sample). Adding a node fills this in for that checkpoint.";
+  "Feeds every node with no incoming edge. The default uses encoded: false " +
+  "with one raw [channels, height, width] sample, which the server encodes " +
+  "using the checkpoint's metadata. With encoded: true, each frame must " +
+  "already match the topology's input shape.";
 
 interface Props {
   /** Checkpoints a run feeds: the nodes with no incoming edge. */
@@ -67,7 +67,7 @@ export function PipelineRunControls({
       setError("input is not valid JSON");
       return;
     }
-    if (!Array.isArray(parsed.frames)) {
+    if (parsed === null || !Array.isArray(parsed.frames)) {
       setError("input must have a 'frames' array");
       return;
     }

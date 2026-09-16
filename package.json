@@ -15,6 +15,16 @@
     "desktop:pack": "npm run build && electron-builder --dir --publish never",
     "desktop:dist": "npm run build && electron-builder --publish never",
     "desktop:test": "node --test desktop/*.test.cjs",
+    "scripts:test": "node --test scripts/*.test.mjs",
+    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:backend": "python3 scripts/provision_e2e_backend.py",
+    "e2e:pins:check": "node scripts/sync_backend_pins.mjs --check",
+    "e2e:pins:sync": "node scripts/sync_backend_pins.mjs",
+    "e2e:typecheck": "tsc --noEmit -p tests/e2e/tsconfig.json",
+    "test:e2e": "npm run build && playwright test --project=smoke",
+    "test:e2e:full": "npm run build && playwright test --project=full",
+    "test:e2e:electron": "npm run build && playwright test --project=electron",
+    "test:e2e:all": "npm run build && playwright test",
     "gen:protocol": "node ./protocol/codegen/generate_ts.mjs",
     "preview": "vite preview"
   },
@@ -25,6 +35,8 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.13.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

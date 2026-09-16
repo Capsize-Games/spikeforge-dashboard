@@ -1,0 +1,94 @@
+name: Sync backend pins
+
+# The end-to-end suite runs against a pinned combination of the five SpikeForge
+# distributions. The authority for that combination is `compatibility.json` in
+# Capsize-Games/spikeforge, and copying it across by hand is the kind of step
+# that gets skipped -- which would leave the suite quietly testing an engine
+# nobody ships any more. This does it instead, and opens a pull request so the
+# bump is reviewed and its test run is visible before it lands.
+
+on:
+  schedule:
+    # Daily, well outside working hours in both hemispheres.
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+# The pull request the job opens is its whole purpose.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-backend-pins
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Update the pins from the engine manifest
+        id: sync
+        run: |
+          node scripts/sync_backend_pins.mjs | tee /tmp/sync.log
+          if git diff --quiet -- tests/e2e/backend-pins.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a pull request for the bump
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="chore/backend-pins-$(date -u +%Y%m%d)"
+
+          # An open pull request from an earlier run already carries this
+          # bump, or will once it is rebased; a second one adds only noise.
+          if gh pr list --head "$branch" --state open --json number \
+              | grep -q '"number"'; then
+            echo "a pull request for $branch is already open"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add tests/e2e/backend-pins.json
+          body="tests/e2e/backend-pins.json mirrors the last entry of"
+          body="$body compatibility.json in Capsize-Games/spikeforge, the"
+          body="$body release combination the Docker image and the desktop"
+          body="$body application ship."
+          git commit \
+            -m "Pin the end-to-end suite to the current engine release" \
+            -m "$body"
+          git push --set-upstream origin "$branch"
+
+          # The body records what actually changed, so a reviewer can see the
+          # bump without opening the diff.
+          {
+            echo "The pinned SpikeForge release combination the end-to-end"
+            echo "suite runs against is behind the engine's own manifest."
+            echo
+            echo '```'
+            cat /tmp/sync.log
+            echo '```'
+            echo
+            echo "CI re-provisions the backend for the new pins and runs the"
+            echo "full tier, because \`backend-pins.json\` is one of the paths"
+            echo "\`scripts/select_e2e_tier.mjs\` treats as contract-affecting."
+          } > /tmp/body.md
+
+          gh pr create \
+            --title "Pin the end-to-end suite to the current engine release" \
+            --body-file /tmp/body.md \
+            --base main \
+            --head "$branch"

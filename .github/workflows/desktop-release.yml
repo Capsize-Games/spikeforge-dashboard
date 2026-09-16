@@ -90,3 +90,18 @@ jobs:
         with:
           files: artifacts/*
           generate_release_notes: true
+
+      - name: Publish to itch.io
+        # Every desktop release ships to itch.io alongside the GitHub
+        # release -- this is not optional, the itch build must never lag
+        # behind what GitHub already has (it silently did, for a full minor
+        # version, before this step existed).
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -fsSL -o /tmp/butler.zip \
+            https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -o /tmp/butler.zip -d /tmp/butler-bin
+          chmod +x /tmp/butler-bin/butler
+          export PATH="/tmp/butler-bin:$PATH"
+          bash scripts/publish_itch.sh capsizegames/spikeforge-desktop artifacts

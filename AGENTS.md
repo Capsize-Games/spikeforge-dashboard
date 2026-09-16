@@ -105,6 +105,15 @@ Two files are over the line limit and predate these rules:
 `src/components/PipelinePanel.tsx` and `src/App.tsx`. Shrink them if you are
 working in them; do not add to them.
 
+## Known issue: Electron teardown on CI
+
+The desktop specs pass; Playwright's teardown of the shared Electron app on CI
+does not. The run reports a failure with no failing test. It is therefore in
+its own workflow (`.github/workflows/electron-e2e.yml`), not `ci.yml`. See
+[`tests/e2e/README.md`](tests/e2e/README.md) before attempting another fix —
+two cleanup-path patches have already failed, and the suggested next step is to
+change the shape rather than patch cleanup again.
+
 ## Writing end-to-end tests
 
 Specs take the `dashboard` fixture and do not know whether they are driving a

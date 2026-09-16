@@ -15,8 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: [self-hosted, linux, x64, spikeforge-dashboard-ci]
             channel: linux-x64
+          # Windows has no self-hosted runner on this workstation, so this leg
+          # still needs a GitHub-hosted machine. It will queue until hosted
+          # minutes are available; the Linux artifact publishes without it.
           - os: windows-latest
             channel: windows-x64
     runs-on: ${{ matrix.os }}
@@ -77,7 +80,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/desktop-v')
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     steps:
       - uses: actions/download-artifact@v4
         with:

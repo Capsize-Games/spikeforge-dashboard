@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +46,7 @@ jobs:
     # Which end-to-end tier this change needs, decided from the diff rather
     # than from a human remembering. `scripts/select_e2e_tier.mjs` owns the
     # rules and `scripts/select_e2e_tier.test.mjs` pins them.
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     outputs:
       tier: ${{ steps.select.outputs.tier }}
       smoke: ${{ steps.select.outputs.smoke }}
@@ -82,7 +82,7 @@ jobs:
     # origin, exactly as it is deployed.
     needs: changes
     if: needs.changes.outputs.smoke == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     steps:
       - uses: actions/checkout@v4
 

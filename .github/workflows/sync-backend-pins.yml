@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     steps:
       - uses: actions/checkout@v4
 

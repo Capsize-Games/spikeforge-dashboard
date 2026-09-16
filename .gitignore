@@ -15,3 +15,12 @@ __pycache__/
 # Local parallel-task orchestration state and generated task briefs
 /.worktrees/
 /plans/parallel-tasks/
+
+# End-to-end suite: the provisioned backend environment, its dataset cache,
+# and Playwright's run artifacts. All are rebuilt on demand.
+.venv-e2e/
+.e2e-data/
+test-results/
+playwright-report/
+blob-report/
+.last-run.json

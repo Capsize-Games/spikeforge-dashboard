@@ -26,7 +26,7 @@ export function SliderField({
   onChange,
 }: Props) {
   return (
-    <label className="field" data-tour={tour}>
+    <label className="field" data-field={label} data-tour={tour}>
       <span className="field-label">
         <span>
           {label}: <b>{value}</b>

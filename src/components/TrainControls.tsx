@@ -19,7 +19,12 @@ export function TrainControls({
 
   return (
     <div className="actions" data-tour="train-controls">
-      <button className="apply" onClick={onTrain} disabled={busy}>
+      <button
+        className="apply"
+        data-testid="train-start"
+        onClick={onTrain}
+        disabled={busy}
+      >
         {readOnly
           ? t("training.disabled")
           : running
@@ -29,6 +34,7 @@ export function TrainControls({
       {readOnly && <p className="arch-note">{t("training.demoDisabled")}</p>}
       <button
         className="apply stop"
+        data-testid="train-stop"
         onClick={onStop}
         disabled={!connected || !running}
       >

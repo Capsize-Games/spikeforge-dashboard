@@ -35,3 +35,115 @@ jobs:
 
       - name: Test desktop shell helpers
         run: npm run desktop:test
+
+  changes:
+    # Which end-to-end tier this change needs, decided from the diff rather
+    # than from a human remembering. `scripts/select_e2e_tier.mjs` owns the
+    # rules and `scripts/select_e2e_tier.test.mjs` pins them.
+    runs-on: ubuntu-latest
+    outputs:
+      tier: ${{ steps.select.outputs.tier }}
+      smoke: ${{ steps.select.outputs.smoke }}
+      full: ${{ steps.select.outputs.full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Both sides of the comparison have to be present to diff them.
+          fetch-depth: 0
+
+      - name: Select the tier from the changed paths
+        id: select
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+          else
+            # A push to main re-verifies everything: it is what gets released.
+            echo "tier=full" >> "$GITHUB_OUTPUT"
+            echo "smoke=true" >> "$GITHUB_OUTPUT"
+            echo "full=true" >> "$GITHUB_OUTPUT"
+            echo "push to ${{ github.ref_name }} -> full"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git diff --name-only "$base"... \
+            | node scripts/select_e2e_tier.mjs
+
+  e2e:
+    # The dashboard is a client, so a build that compiles proves nothing on its
+    # own. This runs the real server -- the pinned release combination from
+    # tests/e2e/backend-pins.json, the same one the Docker image and the
+    # desktop application ship -- serving the freshly built dist/ on a single
+    # origin, exactly as it is deployed.
+    needs: changes
+    if: needs.changes.outputs.smoke == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check the end-to-end suite
+        run: npm run e2e:typecheck
+
+      - name: The pinned engine must match the engine's own manifest
+        # Non-fatal: a release combination can land in the core repository
+        # between the nightly sync and this run, and that is the sync job's
+        # problem to fix, not a reason to block an unrelated pull request.
+        continue-on-error: true
+        run: npm run e2e:pins:check
+
+      - name: Cache the provisioned backend and its datasets
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv-e2e
+            .e2e-data
+          # The pins file is the whole input to provisioning, so a bumped
+          # release combination invalidates the environment automatically.
+          key: e2e-${{ runner.os }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
+
+      - name: Provision the SpikeForge backend
+        run: npm run e2e:backend
+
+      - name: Install the Playwright browser
+        run: npm run e2e:install
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke tier
+        run: npx playwright test --project=smoke
+
+      - name: Install a virtual display for Electron
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Smoke tier in the packaged desktop shell
+        # Runs the same specs inside the Electron window, plus the shell's own
+        # concerns: the engine it spawns, the per-user data directory, the
+        # navigation guard, and a clean shutdown.
+        run: xvfb-run -a npx playwright test --project=electron
+
+      - name: Full tier
+        # Real training, checkpoints, inference, deployment reports, and
+        # pipeline runs. Minutes of CPU work, so it is reserved for changes
+        # that can actually break the contract (see the `changes` job).
+        if: needs.changes.outputs.full == 'true'
+        run: npx playwright test --project=full
+
+      - name: Upload the report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

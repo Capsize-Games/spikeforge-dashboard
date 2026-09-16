@@ -26,4 +26,21 @@ function isSafeExternalUrl(raw) {
   }
 }
 
-module.exports = { backendFilename, isSafeExternalUrl, reservePort };
+/**
+ * Whether a spawned process has already finished.
+ *
+ * A process killed by a signal reports `exitCode === null` and sets
+ * `signalCode` instead, so testing `exitCode` alone reads a signalled child as
+ * still running. Waiting on its `exit` event then waits forever, because that
+ * event has already been emitted.
+ */
+function hasExited(child) {
+  return child.exitCode !== null || child.signalCode !== null;
+}
+
+module.exports = {
+  backendFilename,
+  hasExited,
+  isSafeExternalUrl,
+  reservePort,
+};

@@ -35,6 +35,24 @@ npm run dev            # Vite dev server on :5173, proxies /ws to :8877
 npm run build
 ```
 
+## Tests
+
+```bash
+npm run desktop:test   # Electron shell helpers (node --test)
+npm run e2e:install    # the Playwright browser, once per machine
+npm run test:e2e       # end-to-end smoke tier against a real SpikeForge server
+```
+
+The end-to-end suite drives the built dashboard in a browser and in the desktop
+app against a real engine, with no mocked sockets. It provisions its own Python
+environment on first run. See [`tests/e2e/README.md`](tests/e2e/README.md) for
+the tiers, the backend sources, and how to write a spec.
+
+CI picks the tier from the diff, so a protocol change gets the full run and a
+documentation change gets none. Contributors and coding agents should read
+[`AGENTS.md`](AGENTS.md) for the repository's conventions and for which files
+are generated rather than edited.
+
 ## Desktop application
 
 SpikeForge Desktop packages this exact dashboard with a local, CPU-only

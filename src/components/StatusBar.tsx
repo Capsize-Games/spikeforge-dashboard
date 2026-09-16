@@ -25,7 +25,10 @@ export function StatusBar({
   return (
     <footer className="app-footer">
       <ResourceMonitor stats={stats} requested={requested} />
-      <span className={`conn ${connected ? "ok" : "bad"}`}>
+      <span
+        className={`conn ${connected ? "ok" : "bad"}`}
+        data-testid="connection"
+      >
         <span className={`dot ${connected ? "ok" : "bad"}`} />
         {label}
       </span>

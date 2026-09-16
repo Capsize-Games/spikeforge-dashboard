@@ -1,0 +1,23 @@
+{
+  "_comment": [
+    "The SpikeForge distribution combination the end-to-end suite runs against.",
+    "This mirrors the last row of compatibility.json in capsize-games/spikeforge,",
+    "which is the combination the Docker image and the desktop app ship. Bump",
+    "these together with that file; tests/e2e/specs/smoke/protocol.spec.ts",
+    "asserts the running server reports the protocol version below."
+  ],
+  "protocol_version": "1.0",
+  "packages": {
+    "spikeforge": "0.5.0",
+    "spikeforge-targets": "0.2.0",
+    "spikeforge-hub": "0.3.1",
+    "spikeforge-serve": "0.2.3",
+    "spikeforge-server": "0.3.3"
+  },
+  "extras": {
+    "spikeforge": [
+      "nir"
+    ]
+  },
+  "torch_index_url": "https://download.pytorch.org/whl/cpu"
+}

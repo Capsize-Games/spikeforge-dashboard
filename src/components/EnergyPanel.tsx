@@ -48,7 +48,7 @@ function Report({ payload }: { payload: EnergyPayload }) {
         {report.basis}
       </div>
 
-      <div className="energy-grid">
+      <div className="energy-grid" data-testid="energy-report">
         <span className="energy-key">SOP</span>
         <span>{count(report.ops.sop)}</span>
         <span className="energy-key">MAC</span>
@@ -111,6 +111,7 @@ export function EnergyPanel({ payload, targets, loading, onRun }: Props) {
             type="button"
             className="apply small"
             onClick={() => onRun(target)}
+            data-testid="energy-run"
             disabled={loading || names.length === 0}
           >
             {loading ? t("energy.estimating") : t("energy.estimate")}
@@ -120,6 +121,7 @@ export function EnergyPanel({ payload, targets, loading, onRun }: Props) {
 
       <select
         className="energy-target"
+        data-testid="energy-target"
         value={target}
         aria-label={t("energy.target")}
         onChange={(event) => setTarget(event.target.value)}

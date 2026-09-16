@@ -63,6 +63,13 @@ jobs:
           # on the same day exited without picking up a newer manifest.
           branch="chore/backend-pins"
 
+          # A fresh checkout has no origin/chore/backend-pins tracking ref.
+          # Observe the remote tip explicitly: an implicit lease rejects every
+          # later run as stale. An empty tip permits only branch creation;
+          # either lease still rejects an update made after this observation.
+          expected=$(git ls-remote --heads origin "refs/heads/$branch" \
+            | cut -f1)
+
           git config user.name "github-actions[bot]"
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
@@ -84,7 +91,8 @@ jobs:
           git commit \
             -m "Pin the end-to-end suite to the current engine release" \
             -m "$body"
-          git push --force-with-lease --set-upstream origin "$branch"
+          git push --force-with-lease="refs/heads/$branch:$expected" \
+            --set-upstream origin "$branch"
 
           {
             echo "The pinned SpikeForge release combination the end-to-end"

@@ -8,6 +8,8 @@ directories:
 files:
   - desktop/main.cjs
   - desktop/main_helpers.cjs
+  - desktop/main_window.cjs
+  - desktop/desktop_log.cjs
   - desktop/startup_page.cjs
   - desktop/assets/icon.png
   - LICENSE

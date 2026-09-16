@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell } = require("electron");
+const { app } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -7,10 +7,11 @@ const path = require("node:path");
 const {
   backendFilename,
   hasExited,
-  isSafeExternalUrl,
   reservePort,
 } = require("./main_helpers.cjs");
-const { failedPage, pageUrl, startingPage } = require("./startup_page.cjs");
+const { failedPage, pageUrl } = require("./startup_page.cjs");
+const { createWindow } = require("./main_window.cjs");
+const { logDesktop } = require("./desktop_log.cjs");
 
 const HOST = "127.0.0.1";
 const HEALTH_TIMEOUT_MS = 120_000;
@@ -119,43 +120,12 @@ function waitForHealth(port) {
   });
 }
 
-function createWindow(port) {
-  const window = new BrowserWindow({
-    width: 1440,
-    height: 960,
-    minWidth: 1024,
-    minHeight: 700,
-    backgroundColor: "#0d1117",
-    show: false,
-    title: "SpikeForge Desktop",
-    autoHideMenuBar: true,
-    icon: path.join(__dirname, "assets", "icon.png"),
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-  });
-
-  window.webContents.setWindowOpenHandler(({ url }) => {
-    if (isSafeExternalUrl(url)) shell.openExternal(url);
-    return { action: "deny" };
-  });
-  window.webContents.on("will-navigate", (event, url) => {
-    const localOrigin = `http://${HOST}:${port}`;
-    if (!url.startsWith(localOrigin)) {
-      event.preventDefault();
-      if (isSafeExternalUrl(url)) shell.openExternal(url);
-    }
-  });
-  window.once("ready-to-show", () => window.show());
+/** Open the window and keep `mainWindow` honest about its lifetime. */
+function openWindow(port) {
+  const window = createWindow(`http://${HOST}:${port}`);
   window.on("closed", () => {
     if (mainWindow === window) mainWindow = null;
   });
-  // Shown straight away, before the engine is asked for anything. Waiting for
-  // `/health` to open a window is what made a failed start indistinguishable
-  // from a program that never ran.
-  window.loadURL(pageUrl(startingPage()));
   return window;
 }
 
@@ -207,10 +177,13 @@ async function stopBackend() {
 }
 
 async function start() {
+  // Recorded because a wedged or blacklisted GPU is the usual reason a window
+  // never paints, and it is invisible from anywhere else.
+  logDesktop(`gpu: ${JSON.stringify(app.getGPUFeatureStatus())}`);
   const port = await reservePort(HOST);
   // The window comes first so there is something on screen for the whole of
   // startup, including when startup is what fails.
-  mainWindow = createWindow(port);
+  mainWindow = openWindow(port);
   try {
     backend = spawnBackend(port);
     await waitForHealth(port);
@@ -238,7 +211,7 @@ if (!hasLock) {
   app.whenReady()
     .then(start)
     .catch((error) => {
-      if (!mainWindow) mainWindow = createWindow(0);
+      if (!mainWindow) mainWindow = openWindow(0);
       showFailure(error instanceof Error ? error.message : String(error));
     });
 }

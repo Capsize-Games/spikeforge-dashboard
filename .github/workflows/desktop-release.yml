@@ -130,6 +130,27 @@ jobs:
         with:
           files: artifacts/*
           generate_release_notes: true
+          # Which file to take, and the one step a download cannot carry.
+          body: |
+            ## Install
+
+            ### Linux
+
+            The `.tar.gz` holds the AppImage with its executable
+            permission recorded:
+
+            ```
+            tar -xzf SpikeForge-Desktop-*-linux-x86_64.tar.gz
+            ./SpikeForge-Desktop-*-linux-x86_64.AppImage
+            ```
+
+            The AppImage is also published on its own. A browser
+            download clears the executable bit, so that file needs
+            `chmod +x` before it will start.
+
+            ### Windows
+
+            Run the portable `.exe`. There is no installation step.
 
       - name: Publish to itch.io
         # Every desktop release ships to itch.io alongside the GitHub

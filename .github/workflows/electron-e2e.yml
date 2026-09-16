@@ -1,0 +1,77 @@
+name: Electron e2e
+
+# The desktop shell's end-to-end run, split out of `ci.yml` deliberately.
+#
+# The specs themselves are reliable: 37/37 pass locally in about 90 seconds and
+# 37/37 pass on this runner too. What is not reliable is Playwright's teardown
+# of the shared Electron application on CI -- after every test has passed, the
+# worker fails to exit and burns its full five-minute budget. It has done this
+# on three runs, through two attempted fixes (bounding the close, then killing
+# the process tree), and it has never once reproduced locally.
+#
+# Keeping it in `ci.yml` meant a pull request whose tests all passed still
+# showed red, which trains people to ignore the signal. So it runs here, where
+# a failure is visible and investigable without blocking a merge. It is NOT
+# marked `continue-on-error`: a genuine spec failure must still turn this
+# workflow red. Make this a required check again once the teardown is fixed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: electron-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  electron:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache the provisioned backend and its datasets
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv-e2e
+            .e2e-data
+          key: e2e-${{ runner.os }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
+
+      - name: Provision the SpikeForge backend
+        run: npm run e2e:backend
+
+      - name: Install the Playwright browser
+        run: npm run e2e:install
+
+      - name: Install a virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Build
+        run: npm run build
+
+      - name: Run the desktop shell specs
+        # The smoke specs inside the Electron window, plus the shell's own
+        # concerns: the engine it spawns, the per-user data directory, the
+        # navigation guard, and a clean shutdown.
+        run: xvfb-run -a npx playwright test --project=electron
+
+      - name: Upload the report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-electron
+          path: playwright-report/
+          retention-days: 7

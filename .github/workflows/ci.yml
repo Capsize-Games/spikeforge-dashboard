@@ -124,15 +124,6 @@ jobs:
       - name: Smoke tier
         run: npx playwright test --project=smoke
 
-      - name: Install a virtual display for Electron
-        run: sudo apt-get update && sudo apt-get install -y xvfb
-
-      - name: Smoke tier in the packaged desktop shell
-        # Runs the same specs inside the Electron window, plus the shell's own
-        # concerns: the engine it spawns, the per-user data directory, the
-        # navigation guard, and a clean shutdown.
-        run: xvfb-run -a npx playwright test --project=electron
-
       - name: Full tier
         # Real training, checkpoints, inference, deployment reports, and
         # pipeline runs. Minutes of CPU work, so it is reserved for changes

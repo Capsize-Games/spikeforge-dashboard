@@ -1,0 +1,63 @@
+name: Tag a merged version bump
+
+# Watches `main` for the version in package.json changing, and pushes the
+# matching tag. That tag is what `desktop-release.yml` builds and publishes
+# from.
+#
+# Splitting it this way is what keeps `main` protected: the bump arrives as an
+# ordinary pull request judged by the ordinary checks, and nothing needs
+# permission to push to the branch.
+#
+# The tag must be pushed with `AUTOMATION_TOKEN`. A tag pushed with the
+# built-in `GITHUB_TOKEN` raises no workflow run, so it would appear in the
+# repository and build nothing at all.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+
+      - name: Push the tag for a new version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          tag="desktop-v${version}"
+
+          # package.json changes for many reasons. Only a version that has no
+          # tag yet is a release; anything else is an ordinary edit.
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            echo "${tag} already exists; nothing to release."
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags origin "$tag" >/dev/null 2>&1; then
+            echo "${tag} already exists on the remote; nothing to release."
+            exit 0
+          fi
+
+          if [ -z "${{ secrets.AUTOMATION_TOKEN }}" ]; then
+            echo "::error::${tag} is ready to push, but AUTOMATION_TOKEN is"
+            echo "::error::not set. A tag pushed with the built-in token"
+            echo "::error::starts no build, so this refuses rather than"
+            echo "::error::creating a tag that publishes nothing."
+            exit 1
+          fi
+
+          git config user.name "spikeforge-release"
+          git config user.email "contact@capsizegames.com"
+          git tag -a "$tag" -m "SpikeForge Desktop ${version}"
+          git push origin "$tag"
+          echo "pushed ${tag}" >> "$GITHUB_STEP_SUMMARY"

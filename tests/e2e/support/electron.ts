@@ -9,7 +9,7 @@
  */
 
 import { _electron } from "@playwright/test";
-import type { ElectronApplication } from "@playwright/test";
+import type { ElectronApplication, Page } from "@playwright/test";
 import { chmodSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -90,12 +90,8 @@ export async function launchDesktopApp(
       SPIKEFORGE_E2E_LAUNCH_RECORD: recordPath,
     },
   });
-  // The window opens immediately on a startup page, so its existence no
-  // longer says anything about the engine. The navigation to the local
-  // server is what proves `/health` answered; on a failed start the window
-  // stays on a `data:` URL and this times out with the window's own message.
   const window = await app.firstWindow({ timeout });
-  await window.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\//, { timeout });
+  await waitForDashboard(window, timeout);
 
   return {
     app,
@@ -103,6 +99,45 @@ export async function launchDesktopApp(
     readRecord: () =>
       JSON.parse(readFileSync(recordPath, "utf8")) as LaunchRecord,
   };
+}
+
+/** A promise that never settles, so a losing race entry cannot decide it. */
+const never = new Promise<never>(() => {});
+
+/**
+ * Wait for the dashboard, or report the failure the shell is already showing.
+ *
+ * The window now opens immediately on a startup page, so its existence says
+ * nothing about the engine. Waiting only for the navigation turns a start the
+ * shell has already diagnosed into an opaque URL timeout minutes later, with
+ * the reason sitting on screen unread -- which is how this first failed on
+ * CI. Racing the two reports whichever happens, and says which.
+ */
+async function waitForDashboard(window: Page, timeout: number): Promise<void> {
+  const dashboard = window
+    .waitForURL(/^http:\/\/127\.0\.0\.1:\d+\//, { timeout })
+    .then(() => "dashboard" as const)
+    .catch(() => never);
+  const failed = window
+    .getByRole("heading", { name: /could not start its engine/i })
+    .waitFor({ timeout })
+    .then(() => window.locator("main").innerText())
+    .catch(() => never);
+  // Both entries above swallow their own timeout, so without this the race
+  // would hang until Playwright killed the whole test with no explanation.
+  const expired = new Promise<"expired">((resolve) =>
+    setTimeout(() => resolve("expired"), timeout),
+  );
+
+  const outcome = await Promise.race([dashboard, failed, expired]);
+  if (outcome === "dashboard") return;
+  if (outcome === "expired") {
+    throw new Error(
+      `the desktop shell neither loaded the dashboard nor reported a ` +
+        `failure within ${timeout}ms`,
+    );
+  }
+  throw new Error(`the desktop shell reported a failed start:\n${outcome}`);
 }
 
 /**

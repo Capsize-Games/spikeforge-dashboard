@@ -1,7 +1,7 @@
 {
   "name": "spikeforge-dashboard",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Desktop and browser interface for the SpikeForge spiking-neural-network toolkit.",
   "desktopName": "SpikeForge Desktop",
   "author": "Capsize LLC <contact@capsizegames.com>",

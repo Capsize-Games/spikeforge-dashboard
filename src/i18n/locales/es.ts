@@ -117,4 +117,33 @@ export const ES: TranslationSet = {
   "energy.target": "Destino energético",
   "energy.empty":
     "Aún no hay cálculo energético. Pulsa Estimar para analizar el destino seleccionado.",
+  "auth.signIn": "Iniciar sesión",
+  "auth.signOut": "Cerrar sesión",
+  "auth.signedInAs": "Sesión iniciada como",
+  "auth.dialogTitle": "Iniciar sesión en el hub",
+  "auth.browserOption": "Iniciar sesión con el navegador",
+  "auth.browserOptionHint":
+    "Abre hub.spikeforge.net en el navegador del sistema.",
+  "auth.browserPending": "Esperando a que termines en el navegador…",
+  "auth.browserFailed":
+    "El inicio de sesión no se completó. Vuelve a intentarlo, o usa un " +
+    "código de dispositivo o un token de acceso personal.",
+  "auth.deviceCodeOption": "Usar un código de dispositivo",
+  "auth.deviceCodeIntro": "Ve a",
+  "auth.deviceCodeEnter": "e introduce este código:",
+  "auth.deviceCodeOpenButton": "Abrir en el navegador",
+  "auth.deviceCodeWaiting": "Esperando aprobación…",
+  "auth.deviceCodeExpired": "Este código ha caducado.",
+  "auth.deviceCodeDenied": "El inicio de sesión fue rechazado.",
+  "auth.patOption": "Pegar un token de acceso personal",
+  "auth.patPlaceholder": "Token de acceso personal",
+  "auth.patSubmit": "Usar este token",
+  "auth.patInvalid": "Este token no fue aceptado.",
+  "auth.cancel": "Cancelar",
+  "auth.dismiss": "Aceptar",
+  "auth.notPersisted":
+    "No hay almacenamiento seguro de credenciales disponible en este " +
+    "sistema, así que esta sesión no se recordará — se perderá al " +
+    "reiniciar la aplicación. Pega un token de acceso personal si quieres " +
+    "que la sesión se mantenga.",
 };

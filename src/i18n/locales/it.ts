@@ -58,4 +58,32 @@ export const IT: TranslationSet = {
   "training.idle": "Non in addestramento",
   "training.loss": "Perdita (addestramento)",
   "training.accuracy": "Accuratezza (%)",
+  "auth.signIn": "Accedi",
+  "auth.signOut": "Esci",
+  "auth.signedInAs": "Accesso eseguito come",
+  "auth.dialogTitle": "Accedi all’hub",
+  "auth.browserOption": "Accedi con il browser",
+  "auth.browserOptionHint": "Apre hub.spikeforge.net nel browser di sistema.",
+  "auth.browserPending": "In attesa che tu finisca nel browser…",
+  "auth.browserFailed":
+    "L’accesso non è stato completato. Riprova, oppure usa un codice " +
+    "dispositivo o un token di accesso personale.",
+  "auth.deviceCodeOption": "Usa invece un codice dispositivo",
+  "auth.deviceCodeIntro": "Vai su",
+  "auth.deviceCodeEnter": "e inserisci questo codice:",
+  "auth.deviceCodeOpenButton": "Apri nel browser",
+  "auth.deviceCodeWaiting": "In attesa di approvazione…",
+  "auth.deviceCodeExpired": "Questo codice è scaduto.",
+  "auth.deviceCodeDenied": "L’accesso è stato rifiutato.",
+  "auth.patOption": "Incolla un token di accesso personale",
+  "auth.patPlaceholder": "Token di accesso personale",
+  "auth.patSubmit": "Usa questo token",
+  "auth.patInvalid": "Questo token non è stato accettato.",
+  "auth.cancel": "Annulla",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "Su questo sistema non è disponibile un archivio sicuro delle " +
+    "credenziali, quindi questo accesso non verrà ricordato e andrà " +
+    "perso al riavvio dell’app. Incolla invece un token di accesso " +
+    "personale se vuoi che l’accesso rimanga.",
 };

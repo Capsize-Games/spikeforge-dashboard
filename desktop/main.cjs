@@ -12,6 +12,7 @@ const {
 const { failedPage, pageUrl } = require("./startup_page.cjs");
 const { createWindow } = require("./main_window.cjs");
 const { logDesktop } = require("./desktop_log.cjs");
+const { registerAuthIpc } = require("./auth_ipc.cjs");
 
 const HOST = "127.0.0.1";
 const HEALTH_TIMEOUT_MS = 120_000;
@@ -180,6 +181,10 @@ async function start() {
   // Recorded because a wedged or blacklisted GPU is the usual reason a window
   // never paints, and it is invisible from anywhere else.
   logDesktop(`gpu: ${JSON.stringify(app.getGPUFeatureStatus())}`);
+  // Independent of the local engine below: sign-in should work (and a
+  // restored session should show up) even on a run where the backend never
+  // becomes healthy.
+  registerAuthIpc(() => mainWindow);
   const port = await reservePort(HOST);
   // The window comes first so there is something on screen for the whole of
   // startup, including when startup is what fails.

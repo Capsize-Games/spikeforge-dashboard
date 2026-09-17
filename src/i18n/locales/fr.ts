@@ -59,4 +59,34 @@ export const FR: TranslationSet = {
   "training.idle": "Pas d’entraînement",
   "training.loss": "Perte (entraînement)",
   "training.accuracy": "Précision (%)",
+  "auth.signIn": "Se connecter",
+  "auth.signOut": "Se déconnecter",
+  "auth.signedInAs": "Connecté en tant que",
+  "auth.dialogTitle": "Se connecter au hub",
+  "auth.browserOption": "Se connecter avec le navigateur",
+  "auth.browserOptionHint":
+    "Ouvre hub.spikeforge.net dans le navigateur du système.",
+  "auth.browserPending":
+    "En attente de la fin de la connexion dans le navigateur…",
+  "auth.browserFailed":
+    "La connexion ne s’est pas terminée. Réessayez, ou utilisez un code " +
+    "d’appareil ou un jeton d’accès personnel à la place.",
+  "auth.deviceCodeOption": "Utiliser un code d’appareil à la place",
+  "auth.deviceCodeIntro": "Allez sur",
+  "auth.deviceCodeEnter": "et saisissez ce code :",
+  "auth.deviceCodeOpenButton": "Ouvrir dans le navigateur",
+  "auth.deviceCodeWaiting": "En attente d’approbation…",
+  "auth.deviceCodeExpired": "Ce code a expiré.",
+  "auth.deviceCodeDenied": "La connexion a été refusée.",
+  "auth.patOption": "Coller un jeton d’accès personnel",
+  "auth.patPlaceholder": "Jeton d’accès personnel",
+  "auth.patSubmit": "Utiliser ce jeton",
+  "auth.patInvalid": "Ce jeton n’a pas été accepté.",
+  "auth.cancel": "Annuler",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "Aucun stockage sécurisé des identifiants n’est disponible sur ce " +
+    "système : cette connexion ne sera pas mémorisée et sera perdue au " +
+    "redémarrage de l’application. Collez plutôt un jeton d’accès " +
+    "personnel si vous voulez que la connexion persiste.",
 };

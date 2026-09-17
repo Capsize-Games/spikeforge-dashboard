@@ -114,4 +114,31 @@ export const JA: TranslationSet = {
   "energy.target": "エネルギー対象",
   "energy.empty":
     "エネルギー推定はまだありません。推定を押して選択したターゲットを計算します。",
+  "auth.signIn": "サインイン",
+  "auth.signOut": "サインアウト",
+  "auth.signedInAs": "サインイン中:",
+  "auth.dialogTitle": "ハブにサインイン",
+  "auth.browserOption": "ブラウザでサインイン",
+  "auth.browserOptionHint": "システムのブラウザで hub.spikeforge.net を開きます。",
+  "auth.browserPending": "ブラウザでの完了を待っています…",
+  "auth.browserFailed":
+    "サインインが完了しませんでした。もう一度試すか、デバイスコードまたは" +
+    "個人アクセストークンを使用してください。",
+  "auth.deviceCodeOption": "代わりにデバイスコードを使う",
+  "auth.deviceCodeIntro": "次のサイトにアクセスし:",
+  "auth.deviceCodeEnter": "このコードを入力してください:",
+  "auth.deviceCodeOpenButton": "ブラウザで開く",
+  "auth.deviceCodeWaiting": "承認を待っています…",
+  "auth.deviceCodeExpired": "このコードは期限切れです。",
+  "auth.deviceCodeDenied": "サインインが拒否されました。",
+  "auth.patOption": "個人アクセストークンを貼り付け",
+  "auth.patPlaceholder": "個人アクセストークン",
+  "auth.patSubmit": "このトークンを使う",
+  "auth.patInvalid": "このトークンは受け付けられませんでした。",
+  "auth.cancel": "キャンセル",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "このシステムには安全な資格情報ストレージがないため、このサインイン" +
+    "は記憶されません。アプリを再起動すると失われます。サインインを保持" +
+    "したい場合は、代わりに個人アクセストークンを貼り付けてください。",
 };

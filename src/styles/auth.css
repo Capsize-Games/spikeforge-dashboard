@@ -1,0 +1,90 @@
+/* --- hub sign-in: header control and the sign-in dialog --- */
+.account-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.account-signin {
+  width: auto;
+  height: 24px;
+  padding: 0 8px;
+  gap: 5px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.account-handle {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.account-warning {
+  display: inline-flex;
+  align-items: center;
+  color: var(--bad);
+}
+
+.auth-dialog-card {
+  width: 340px;
+}
+
+.auth-dialog-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.auth-dialog-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--bad);
+}
+
+.device-code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.device-code-host {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.device-code-value {
+  align-self: flex-start;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  font: 600 15px/1.2 ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.pat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pat-input {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}

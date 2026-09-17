@@ -115,4 +115,33 @@ export const DE: TranslationSet = {
   "energy.target": "Energieziel",
   "energy.empty":
     "Noch keine Energieschätzung. Mit Schätzen das gewählte Ziel berechnen.",
+  "auth.signIn": "Anmelden",
+  "auth.signOut": "Abmelden",
+  "auth.signedInAs": "Angemeldet als",
+  "auth.dialogTitle": "Beim Hub anmelden",
+  "auth.browserOption": "Mit Browser anmelden",
+  "auth.browserOptionHint":
+    "Öffnet hub.spikeforge.net im Standardbrowser des Systems.",
+  "auth.browserPending": "Warte auf Abschluss im Browser…",
+  "auth.browserFailed":
+    "Anmeldung nicht abgeschlossen. Erneut versuchen oder stattdessen einen " +
+    "Gerätecode oder ein persönliches Zugriffstoken verwenden.",
+  "auth.deviceCodeOption": "Stattdessen Gerätecode verwenden",
+  "auth.deviceCodeIntro": "Gehe zu",
+  "auth.deviceCodeEnter": "und gib diesen Code ein:",
+  "auth.deviceCodeOpenButton": "Im Browser öffnen",
+  "auth.deviceCodeWaiting": "Warte auf Bestätigung…",
+  "auth.deviceCodeExpired": "Dieser Code ist abgelaufen.",
+  "auth.deviceCodeDenied": "Anmeldung wurde abgelehnt.",
+  "auth.patOption": "Persönliches Zugriffstoken einfügen",
+  "auth.patPlaceholder": "Persönliches Zugriffstoken",
+  "auth.patSubmit": "Dieses Token verwenden",
+  "auth.patInvalid": "Dieses Token wurde nicht akzeptiert.",
+  "auth.cancel": "Abbrechen",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "Auf diesem System ist kein sicherer Zugangsdatenspeicher verfügbar, " +
+    "daher wird diese Anmeldung nicht gespeichert — sie geht beim " +
+    "Neustart der App verloren. Füge stattdessen ein persönliches " +
+    "Zugriffstoken ein, wenn die Anmeldung erhalten bleiben soll.",
 };

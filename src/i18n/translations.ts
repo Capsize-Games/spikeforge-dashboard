@@ -127,6 +127,34 @@ export const EN = {
   "energy.empty":
     "No energy estimate yet. Press Estimate to account the configured " +
     "topology's event-driven operations for the selected target.",
+  "auth.signIn": "Sign in",
+  "auth.signOut": "Sign out",
+  "auth.signedInAs": "Signed in as",
+  "auth.dialogTitle": "Sign in to the hub",
+  "auth.browserOption": "Sign in with browser",
+  "auth.browserOptionHint": "Opens hub.spikeforge.net in your system browser.",
+  "auth.browserPending": "Waiting for you to finish in your browser…",
+  "auth.browserFailed":
+    "Sign-in did not complete. Try again, or use a device code or a " +
+    "personal access token instead.",
+  "auth.deviceCodeOption": "Use a device code instead",
+  "auth.deviceCodeIntro": "Go to",
+  "auth.deviceCodeEnter": "and enter this code:",
+  "auth.deviceCodeOpenButton": "Open in browser",
+  "auth.deviceCodeWaiting": "Waiting for approval…",
+  "auth.deviceCodeExpired": "This code expired.",
+  "auth.deviceCodeDenied": "Sign-in was declined.",
+  "auth.patOption": "Paste a personal access token",
+  "auth.patPlaceholder": "Personal access token",
+  "auth.patSubmit": "Use this token",
+  "auth.patInvalid": "This token was not accepted.",
+  "auth.cancel": "Cancel",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "No secure credential storage is available on this system, so this " +
+    "sign-in will not be remembered — it will be lost when the app " +
+    "restarts. Paste a personal access token instead if you want sign-in " +
+    "to persist.",
 } as const;
 
 export type TranslationKey = keyof typeof EN;

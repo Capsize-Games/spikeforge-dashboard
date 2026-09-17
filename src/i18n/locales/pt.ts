@@ -58,4 +58,32 @@ export const PT: TranslationSet = {
   "training.idle": "Sem treino",
   "training.loss": "Perda (treino)",
   "training.accuracy": "Precisão (%)",
+  "auth.signIn": "Entrar",
+  "auth.signOut": "Sair",
+  "auth.signedInAs": "Sessão iniciada como",
+  "auth.dialogTitle": "Entrar no hub",
+  "auth.browserOption": "Entrar pelo navegador",
+  "auth.browserOptionHint": "Abre hub.spikeforge.net no navegador do sistema.",
+  "auth.browserPending": "Aguardando você concluir no navegador…",
+  "auth.browserFailed":
+    "O login não foi concluído. Tente novamente ou use um código de " +
+    "dispositivo ou um token de acesso pessoal.",
+  "auth.deviceCodeOption": "Usar um código de dispositivo",
+  "auth.deviceCodeIntro": "Acesse",
+  "auth.deviceCodeEnter": "e digite este código:",
+  "auth.deviceCodeOpenButton": "Abrir no navegador",
+  "auth.deviceCodeWaiting": "Aguardando aprovação…",
+  "auth.deviceCodeExpired": "Este código expirou.",
+  "auth.deviceCodeDenied": "O login foi recusado.",
+  "auth.patOption": "Colar um token de acesso pessoal",
+  "auth.patPlaceholder": "Token de acesso pessoal",
+  "auth.patSubmit": "Usar este token",
+  "auth.patInvalid": "Este token não foi aceito.",
+  "auth.cancel": "Cancelar",
+  "auth.dismiss": "OK",
+  "auth.notPersisted":
+    "Não há armazenamento seguro de credenciais disponível neste " +
+    "sistema, então este login não será lembrado — ele será perdido ao " +
+    "reiniciar o aplicativo. Cole um token de acesso pessoal caso queira " +
+    "que o login persista.",
 };

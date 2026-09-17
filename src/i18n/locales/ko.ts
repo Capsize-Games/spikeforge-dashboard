@@ -113,4 +113,31 @@ export const KO: TranslationSet = {
   "energy.target": "에너지 대상",
   "energy.empty":
     "에너지 추정치가 없습니다. 추정을 눌러 선택한 대상을 계산하세요.",
+  "auth.signIn": "로그인",
+  "auth.signOut": "로그아웃",
+  "auth.signedInAs": "로그인 계정:",
+  "auth.dialogTitle": "허브에 로그인",
+  "auth.browserOption": "브라우저로 로그인",
+  "auth.browserOptionHint": "시스템 브라우저에서 hub.spikeforge.net을 엽니다.",
+  "auth.browserPending": "브라우저에서 완료하기를 기다리는 중…",
+  "auth.browserFailed":
+    "로그인이 완료되지 않았습니다. 다시 시도하거나 대신 기기 코드나 개인 " +
+    "액세스 토큰을 사용하세요.",
+  "auth.deviceCodeOption": "대신 기기 코드 사용",
+  "auth.deviceCodeIntro": "다음으로 이동:",
+  "auth.deviceCodeEnter": "그리고 다음 코드를 입력하세요:",
+  "auth.deviceCodeOpenButton": "브라우저에서 열기",
+  "auth.deviceCodeWaiting": "승인을 기다리는 중…",
+  "auth.deviceCodeExpired": "이 코드는 만료되었습니다.",
+  "auth.deviceCodeDenied": "로그인이 거부되었습니다.",
+  "auth.patOption": "개인 액세스 토큰 붙여넣기",
+  "auth.patPlaceholder": "개인 액세스 토큰",
+  "auth.patSubmit": "이 토큰 사용",
+  "auth.patInvalid": "이 토큰은 허용되지 않았습니다.",
+  "auth.cancel": "취소",
+  "auth.dismiss": "확인",
+  "auth.notPersisted":
+    "이 시스템에는 안전한 자격 증명 저장소가 없어 이 로그인은 저장되지 " +
+    "않으며 앱을 재시작하면 사라집니다. 로그인을 유지하려면 대신 개인 " +
+    "액세스 토큰을 붙여넣으세요.",
 };

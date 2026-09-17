@@ -41,6 +41,10 @@ function createWindow(localOrigin) {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      // Exposes `window.spikeforgeAuth` (hub sign-in) and nothing else --
+      // sandboxed and context-isolated, so this is the renderer's only path
+      // into anything the main process holds.
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
 

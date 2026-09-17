@@ -4,6 +4,7 @@ import { useTheme } from "../theme";
 import type { TourLesson } from "../tour/types";
 import type { ExecutionMode } from "../types";
 import { useI18n } from "../i18n/I18nProvider";
+import { AccountControl } from "./AccountControl";
 import { LanguageSelect } from "./LanguageSelect";
 import { ModeToggle } from "./ModeToggle";
 import { TourLauncher } from "./TourLauncher";
@@ -44,6 +45,8 @@ export function TopBar({
       />
 
       <LanguageSelect />
+
+      <AccountControl />
 
       <button
         type="button"

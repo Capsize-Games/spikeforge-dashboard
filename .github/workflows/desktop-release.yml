@@ -115,6 +115,7 @@ jobs:
             release/*.AppImage
             release/*.tar.gz
             release/*.exe
+            release/*.zip
           if-no-files-found: error
 
   release:

@@ -15,15 +15,19 @@ version=$(node -p "require('./package.json').version")
 # with "Permission denied"; the tar records the mode, and the itch app
 # unpacks it the same way it would any other archive.
 linux_archive=$(find "$release_dir" -maxdepth 1 -type f -name '*.tar.gz' -print -quit)
-windows_portable=$(find "$release_dir" -maxdepth 1 -type f -name '*windows*x64*portable.exe' -print -quit)
+# The Windows channel carries the zip, not the installer. The itch app
+# unpacks an archive once and runs the executable directly, so there is no
+# per-launch extraction; handing it a setup program would make every player
+# run an installer through a game launcher.
+windows_archive=$(find "$release_dir" -maxdepth 1 -type f -name '*windows*x64*.zip' -print -quit)
 
-if [[ -z "$linux_archive" || -z "$windows_portable" ]]; then
-  echo "expected Linux tar.gz and Windows portable executable in $release_dir" >&2
+if [[ -z "$linux_archive" || -z "$windows_archive" ]]; then
+  echo "expected Linux tar.gz and Windows zip in $release_dir" >&2
   exit 1
 fi
 
 butler push --if-changed --fix-permissions --userversion "$version" \
   "$linux_archive" "$target:linux-x64"
 butler push --if-changed --fix-permissions --userversion "$version" \
-  "$windows_portable" "$target:windows-x64"
+  "$windows_archive" "$target:windows-x64"
 butler status "$target"

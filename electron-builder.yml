@@ -32,9 +32,26 @@ linux:
   icon: desktop/assets/icon.png
   maintainer: Capsize LLC <contact@capsizegames.com>
 win:
+  # Two Windows artifacts, because the two ways people get this want
+  # different things. The portable target that used to be here wanted neither:
+  # it re-extracted 938MB across 3207 files into %TEMP% on every cold start,
+  # showing a process in the task list and no window until it finished. That
+  # is indistinguishable from a hang, and it is what "nothing happens on
+  # Windows" turned out to be.
   target:
-    - portable
+    - nsis
+    - zip
   icon: desktop/assets/icon.png
-portable:
-  artifactName: "SpikeForge-Desktop-${version}-windows-${arch}-portable.${ext}"
+  # Names the zip. There is no top-level `zip:` section to put this in, and
+  # `nsis.artifactName` below overrides it for the installer.
+  artifactName: "SpikeForge-Desktop-${version}-windows-${arch}.${ext}"
+nsis:
+  # Unpacks once, with a progress bar, and every later launch is immediate.
+  oneClick: false
+  # Per-user, so installing raises no administrator prompt.
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  artifactName: "SpikeForge-Desktop-${version}-windows-${arch}-setup.${ext}"
 publish: null

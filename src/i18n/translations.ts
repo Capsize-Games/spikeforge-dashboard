@@ -101,6 +101,28 @@ export const EN = {
   "action.load": "Load",
   "action.save": "Save",
   "action.unload": "Unload",
+  "action.cancel": "Cancel",
+  "action.close": "Close",
+  "action.tryAgain": "Try again",
+  "publish.action": "Publish to hub",
+  "publish.title": "Publish to the hub",
+  "publish.name": "Name",
+  "publish.version": "Version",
+  "publish.license": "License (SPDX)",
+  "publish.summary": "Summary (optional)",
+  "publish.submit": "Publish",
+  "publish.status.hashing": "Reading the bundle…",
+  "publish.status.reserving": "Reserving the upload…",
+  "publish.status.uploading": "Uploading…",
+  "publish.status.committing": "Publishing…",
+  "publish.cancelled": "Upload cancelled.",
+  "publish.done": "Published to the hub.",
+  "publish.hostedNotice":
+    "Not available here: every visitor to this hosted dashboard shares the " +
+    "same saved-model folder, so a publish could not be attributed to an " +
+    "account or its quota. Publish from SpikeForge Desktop or the " +
+    "spikeforge-hub CLI instead.",
+  "publish.signInNotice": "Sign in to the hub to publish a model.",
   "training.disabled": "Training disabled",
   "training.running": "Training…",
   "training.train": "⚡ Train model",

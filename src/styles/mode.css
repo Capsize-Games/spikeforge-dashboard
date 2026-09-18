@@ -3,35 +3,31 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-}
-
-/* The mode group takes the free space, so the theme button no longer does. */
-.topbar .theme-toggle {
-  margin-left: 0;
 }
 
 .mode-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--fs-secondary);
   color: var(--muted);
 }
 
 .mode-options {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
+  background: var(--surface-3);
   overflow: hidden;
 }
 
 .mode-option {
-  padding: 4px 10px;
+  height: var(--control-h-toolbar);
+  padding: 0 12px;
   border: none;
-  background: var(--bg);
+  background: none;
   color: var(--muted);
-  font-size: 12px;
+  font: inherit;
+  font-size: var(--fs-secondary);
   cursor: pointer;
 }
 
@@ -42,10 +38,11 @@
 .mode-option.active {
   background: var(--accent);
   color: var(--on-accent);
+  font-weight: var(--fw-semibold);
 }
 
 .mode-note {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-style: italic;
   color: var(--muted);
 }
@@ -53,7 +50,7 @@
 /* --- architecture note in the Model section --- */
 .arch-note {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-style: italic;
   line-height: 1.4;
   color: var(--muted);
@@ -64,9 +61,10 @@
   margin: 0 0 8px;
   padding: 6px 8px;
   border-left: 2px solid var(--accent);
+  border-radius: var(--radius);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text);
-  font-size: 11px;
+  font-size: var(--fs-micro);
   line-height: 1.4;
 }
 

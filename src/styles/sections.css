@@ -1,105 +1,46 @@
 /* --- static section headings --- */
-.section {
-  border-bottom: 1px solid var(--border);
-}
-
-.section:last-child {
-  border-bottom: none;
+/* Sections are separated by a hairline between them, not by a rule under
+   each one (the last child used to need a special case for that). */
+.section:not(:first-child) {
+  border-top: 1px solid var(--line-soft);
 }
 
 .section-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 0;
+  padding: 12px 0 6px;
 }
 
 .section-text {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--fs-panel);
+  font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
 .section-hint {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 
 .section-body {
-  padding: 2px 0 14px;
-}
-
-.col-viz {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  min-width: 0;
-}
-
-/* Viewer tab: live activity (wider) beside on-demand analysis panels, so
-   the stack that used to run the full tab height fits side by side instead.
-   Both columns stretch to the row's full height (grid's default alignment)
-   so the activity panel below can flex-fill whatever it doesn't need. */
-.viewer-grid {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 12px;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-@media (max-width: 1100px) {
-  /* Stacked single column: let content take its natural height and the
-     tab scroll again, rather than squeezing both halves to share one
-     screen's height. */
-  .viewer-grid {
-    grid-template-columns: minmax(0, 1fr);
-    flex: 0 1 auto;
-    min-height: 0;
-  }
-
-  .viewer-grid .activity-panel {
-    flex: 0 1 auto;
-  }
-
-  .viewer-grid .raster-row {
-    flex: 0 1 auto;
-    min-height: 220px;
-  }
-}
-
-.col-viz .panel {
-  padding: 10px;
-}
-
-/* Network activity absorbs whatever height TimeCursor/InputRow don't use,
-   instead of stacking its 3 rasters to a fixed pixel height and forcing
-   the tab to scroll (see RasterCanvas's measured-height resize). */
-.col-viz .activity-panel {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.col-viz .panel-title {
-  margin-bottom: 6px;
+  padding: 2px 0 16px;
 }
 
 .metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  font-size: 13px;
+  gap: 6px 12px;
+  font-size: var(--fs-ui);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Prediction result on a single row: mark, input, prediction, confidence. */
@@ -108,11 +49,12 @@
   grid-template-columns: auto repeat(3, minmax(0, 1fr));
   gap: 8px;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--fs-ui);
+  font-variant-numeric: tabular-nums;
 }
 
 .pred-mark {
-  font-size: 15px;
+  font-size: var(--fs-major);
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -128,7 +70,7 @@
 
 .muted {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 .predictions {
@@ -139,31 +81,17 @@
 
 .pred {
   padding: 3px 7px;
-  border-radius: 4px;
-  font-size: 12px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-secondary);
+  background: var(--surface-2);
 }
 
 .pred.ok {
   color: var(--ok);
-  border-color: color-mix(in srgb, var(--ok) 50%, transparent);
 }
 
 .pred.bad {
   color: var(--bad);
-  border-color: color-mix(in srgb, var(--bad) 50%, transparent);
-}
-
-.apply.ghost {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--border);
-}
-
-.panel-title.subsection {
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
 }
 
 .model-row {
@@ -175,25 +103,20 @@
 .text-input {
   flex: 1;
   min-width: 0;
-  background: var(--bg);
+  height: var(--control-h);
+  padding: 0 8px;
+  background: var(--surface-3);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 5px 7px;
-  font-size: 12px;
-}
-
-.apply.small {
-  width: auto;
-  margin-top: 0;
-  padding: 5px 10px;
-  font-size: 12px;
+  border: none;
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: var(--fs-secondary);
 }
 
 .model-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   margin-top: 8px;
   max-height: 160px;
   overflow-y: auto;
@@ -204,10 +127,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 6px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 5px 7px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: var(--fs-secondary);
 }
 
 .model-name {
@@ -228,7 +151,7 @@
   border: none;
   color: var(--accent);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--fs-secondary);
   padding: 0;
 }
 
@@ -247,19 +170,30 @@
   gap: 12px;
 }
 
+/* Panels are a surface, not a rectangle: hierarchy comes from the surface
+   step and the spacing around it. */
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--surface-1);
+  border-radius: var(--radius);
   padding: 12px;
 }
 
+/* The legacy title markup still used by the panels that have not been
+   migrated to PanelHeader. Sentence case, never upper case. */
 .panel-title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--panel-header-h);
+  margin-bottom: 10px;
+  font-size: var(--fs-panel);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.panel-title.subsection {
+  min-height: 0;
+  margin: 16px 0 8px;
 }
 
 .pair {
@@ -271,21 +205,15 @@
 canvas {
   display: block;
   max-width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   background: var(--canvas-bg);
-}
-
-/* Line charts draw their own plot frame, so skip the extra canvas border. */
-canvas.chart-canvas {
-  border: none;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
+  gap: 5px;
+  font-size: var(--fs-ui);
   margin-bottom: 10px;
   color: var(--muted);
 }
@@ -299,11 +227,11 @@ canvas.chart-canvas {
 
 .field b {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
 }
 
 .field input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
 }
-

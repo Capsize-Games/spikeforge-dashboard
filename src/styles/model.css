@@ -4,8 +4,9 @@
   flex-direction: column;
   gap: 0;
   padding: 0;
-  border: 1px solid var(--border);
-  background: var(--panel-alt);
+  background: var(--surface-1);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .model-head {
@@ -13,15 +14,13 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: var(--panel-head);
-  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
 }
 
 .model-title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
+  font-size: var(--fs-panel);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
 }
 
 .model-current {
@@ -30,7 +29,7 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--fs-secondary);
   color: var(--muted);
 }
 
@@ -40,8 +39,9 @@
   gap: 4px;
   max-width: 170px;
   padding: 2px 4px 2px 8px;
-  border: 1px solid var(--border);
-  font-size: 11px;
+  border-radius: var(--radius);
+  background: var(--surface-3);
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 
@@ -62,7 +62,7 @@
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--fs-telemetry);
   line-height: 1;
   cursor: pointer;
 }
@@ -78,7 +78,7 @@
 
 .model-chip.on {
   color: var(--ok);
-  border-color: color-mix(in srgb, var(--ok) 50%, transparent);
+  background: color-mix(in srgb, var(--ok) 14%, var(--surface-3));
 }
 
 .model-loading {
@@ -92,7 +92,7 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--line);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -106,18 +106,19 @@
 
 .tabs {
   display: flex;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--border);
+  gap: 4px;
+  padding: 8px 12px 0;
 }
 
 .tab {
   flex: 1;
-  padding: 7px 8px;
+  padding: 6px 8px;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--muted);
-  font-size: 12px;
+  font: inherit;
+  font-size: var(--fs-secondary);
   cursor: pointer;
 }
 
@@ -146,15 +147,11 @@
 .control-row .text-input {
   flex: 1;
   min-width: 0;
-  height: 30px;
-  padding: 0 8px;
 }
 
 .control-row .apply.small {
   flex: 0 0 auto;
   margin-top: 0;
-  height: 30px;
-  padding: 0 14px;
 }
 
 /* An <a> styled as .apply needs what a <button> gets for free. */
@@ -172,12 +169,6 @@ a.apply.disabled {
 }
 
 /* --- compact loaded-model summary row --- */
-/* Sits under the tab strip, in the fixed header, so it stays visible on
-   every tab instead of only the one that happened to render it. */
-.loaded-model-bar {
-  margin-top: 10px;
-}
-
 .loaded-model {
   padding: 8px 10px;
 }
@@ -187,16 +178,15 @@ a.apply.disabled {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-secondary);
   color: var(--muted);
 }
 
 .loaded-model-name {
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
 .loaded-model-sep {
-  color: var(--border);
+  color: var(--line);
 }
-

@@ -1,43 +1,116 @@
+/*
+ * Design tokens — "SpikeForge Studio", a precision scientific workstation.
+ *
+ * Near-black surfaces with subtle depth, restrained cyan illumination, and
+ * precision typography. The accent is reserved for selected / navigation /
+ * live-data / action states, never general decoration.
+ *
+ * Every token has a value in both :root and [data-theme="light"]. Older
+ * variable names (--bg, --panel, --border, ...) are kept as aliases so the
+ * per-panel stylesheets keep working while they migrate to the tokens.
+ */
 :root {
-  --bg: #020610;
-  --panel: #0a1221;
-  --panel-alt: #070e1b;
-  --panel-head: #050a15;
-  --popup: #101b30;
-  --border: #2c3c55;
+  /* --- surface levels (near-black base, three raised steps) --- */
+  --canvas: #05070c;
+  --surface-1: #0a0e16;
+  --surface-2: #0e131d;
+  --surface-3: #141a26;
+
+  /* --- separators --- */
+  --line-soft: #171d29;
+  --line: #26303f;
+
+  /* --- ambient background wash (subtle, never neon) --- */
+  --ambient:
+    radial-gradient(
+      1200px 700px at 16% -12%,
+      rgba(112, 207, 255, 0.05),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 560px at 100% 0%,
+      rgba(122, 132, 255, 0.035),
+      transparent 58%
+    );
+
+  /* --- semantic colours --- */
   --text: #dfebff;
-  --muted: #a1b2cc;
+  --muted: #93a3bd;
   --accent: #70cfff;
   --on-accent: #030a17;
   --ok: #3fb950;
   --bad: #f85149;
   --warn: #e3b341;
-  --canvas-bg: #020610;
-  --overlay: rgba(13, 17, 23, 0.85);
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   --on-danger: #ffffff;
+
+  /* --- typography scale --- */
+  --fs-workspace: 20px; /* workspace title */
+  --fs-major: 15px; /* major section */
+  --fs-panel: 13px; /* panel title, normal UI */
+  --fs-ui: 13px;
+  --fs-secondary: 12px;
+  --fs-micro: 11px;
+  --fs-telemetry: 10px;
+  --fs-metric: 26px; /* major metric */
+  --fw-semibold: 600;
+
+  /* --- control geometry --- */
+  --control-h: 30px; /* standard control */
+  --control-h-toolbar: 28px;
+  --icon: 16px;
+  --panel-header-h: 36px;
+  --nav-row-h: 38px;
+  --rail-collapsed: 64px;
+  --rail-expanded: 208px;
+  --radius: 4px;
+
+  /* --- depth --- */
+  --overlay: rgba(5, 7, 12, 0.82);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
+
+  /* --- legacy aliases (do not add new uses) --- */
+  --bg: var(--canvas);
+  --panel: var(--surface-1);
+  --panel-alt: var(--surface-1);
+  --panel-head: var(--surface-2);
+  --popup: var(--surface-3);
+  --border: var(--line);
+  --canvas-bg: var(--canvas);
 }
 
 /* --- light theme (toggled via <html data-theme="light">) --- */
 [data-theme="light"] {
-  --bg: #f6f8fa;
-  --panel: #ffffff;
-  --panel-alt: #ffffff;
-  --panel-head: #f6f8fa;
-  --popup: #ffffff;
-  --border: #d0d7de;
+  --canvas: #eef1f5;
+  --surface-1: #ffffff;
+  --surface-2: #f4f6f8;
+  --surface-3: #ffffff;
+  --line-soft: #e7ebf0;
+  --line: #d0d7de;
+
+  --ambient:
+    radial-gradient(
+      1100px 640px at 14% -12%,
+      rgba(9, 105, 218, 0.05),
+      transparent 60%
+    ),
+    radial-gradient(
+      820px 520px at 100% 0%,
+      rgba(9, 105, 218, 0.03),
+      transparent 58%
+    );
+
   --text: #1f2328;
-  --muted: #59636e;
+  --muted: #57606a;
   --accent: #0969da;
   --on-accent: #ffffff;
   --ok: #1a7f37;
   --bad: #cf222e;
   --warn: #9a6700;
-  --canvas-bg: #ffffff;
-  --overlay: rgba(255, 255, 255, 0.85);
-  --shadow: 0 6px 20px rgba(31, 35, 40, 0.15);
   --on-danger: #ffffff;
+
+  --overlay: rgba(238, 241, 245, 0.85);
+  --shadow: 0 8px 24px rgba(31, 35, 40, 0.18);
   color-scheme: light;
 }
 
@@ -59,45 +132,68 @@ body {
     system-ui,
     -apple-system,
     sans-serif;
-  background: var(--bg);
+  font-size: var(--fs-ui);
+  background: var(--canvas);
   color: var(--text);
 }
 
-/* Fixed shell: header and footer stay put, only .app-main scrolls. */
+/* Numeric readouts and chart axis labels line up column-wise. */
+.tabular,
+.res-value,
+.cursor-readout,
+.metric-value,
+.readout-table,
+.drift-table,
+.energy-grid {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Fixed shell: the navigation rail is a whole-height column, the header and
+ * footer stay put, and only .app-main scrolls. Named areas keep the rail out
+ * of the document flow order, so no extra wrapper element is needed.
+ * Dialogs and the tour card are position: fixed and take no grid cell.
+ */
 .app {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "rail header"
+    "rail main"
+    "rail footer";
   overflow: hidden;
+  background-color: var(--canvas);
+  background-image: var(--ambient);
+}
+
+.nav-rail {
+  grid-area: rail;
 }
 
 .app-header {
-  flex: 0 0 auto;
-  padding: 12px 12px 0;
-}
-
-.app-header .topbar {
-  margin-bottom: 0;
+  grid-area: header;
 }
 
 .app-main {
-  flex: 1 1 auto;
+  grid-area: main;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
-  padding: 12px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
 }
 
 .app-footer {
-  flex: 0 0 auto;
+  grid-area: footer;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-right: 12px;
-  border-top: 1px solid var(--border);
-  background: var(--panel);
+  padding-right: 18px;
+  background: var(--surface-2);
 }
 
 .conn {
@@ -105,7 +201,7 @@ body {
   align-items: center;
   gap: 6px;
   padding: 7px 0;
-  font-size: 12px;
+  font-size: var(--fs-secondary);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -118,36 +214,21 @@ body {
   color: var(--bad);
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.theme-toggle {
-  width: 30px;
-  height: 24px;
-  font-size: 13px;
-}
-
-.language-select {
-  margin-left: auto;
+/* Brand mark plus wordmark; the dark-theme colour lives in capsize.css. */
+.brand {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  color: var(--muted);
+  gap: 7px;
+  font-size: var(--fs-major);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+  color: var(--text);
 }
 
-.language-select select {
-  width: 104px;
-  min-height: 24px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--panel);
-  color: var(--text);
-  font: inherit;
-  font-size: 12px;
+.brand-mark {
+  color: var(--accent);
+  font-size: 15px;
+  line-height: 1;
 }
 
 .sr-only {
@@ -162,15 +243,9 @@ body {
   border: 0;
 }
 
-.logo {
-  display: inline-flex;
-  align-items: center;
-  color: var(--accent);
-}
-
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -184,5 +259,5 @@ body {
 
 .status {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }

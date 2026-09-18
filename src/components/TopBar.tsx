@@ -1,27 +1,38 @@
-import { Activity } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
+import { LESSONS } from "../tour/lessons";
 import { useTheme } from "../theme";
-import type { TourLesson } from "../tour/types";
-import type { ExecutionMode } from "../types";
 import { useI18n } from "../i18n/I18nProvider";
+import type { ExecutionMode } from "../types";
+import { IconButton } from "./IconButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { ModeToggle } from "./ModeToggle";
+import { SessionContext } from "./SessionContext";
+import type { SessionFacts } from "./SessionContext";
 import { TourLauncher } from "./TourLauncher";
 
 interface Props {
   mode: ExecutionMode;
   onModeChange: (mode: ExecutionMode) => void;
-  lessons: TourLesson[];
+  /** Label of the active section, shown beside the wordmark. */
+  section: string;
+  /** Facts already held in App state; unknown values render nothing. */
+  session: SessionFacts;
   tourOpen: boolean;
   onToggleTours: () => void;
   onOpenTour: (id: string) => void;
 }
 
-/** App header: logo, guided tours, execution-mode toggle, theme toggle. */
+/**
+ * Product header: wordmark and active section on the left, quiet session
+ * context next, and the global utilities on the right in descending visual
+ * weight (execution mode, tours, language, theme).
+ */
 export function TopBar({
   mode,
   onModeChange,
-  lessons,
+  section,
+  session,
   tourOpen,
   onToggleTours,
   onOpenTour,
@@ -30,30 +41,37 @@ export function TopBar({
   const { t } = useI18n();
   return (
     <header className="topbar">
-      <span className="logo" role="img" aria-label="Spikeforge">
-        <Activity size={22} strokeWidth={2} />
-      </span>
+      <div className="topbar-product">
+        <span className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            ◈
+          </span>
+          SPIKEFORGE
+        </span>
+        <span className="topbar-sep" aria-hidden="true">
+          /
+        </span>
+        <span className="brand-section">{section}</span>
+      </div>
 
-      <ModeToggle mode={mode} onChange={onModeChange} />
+      <SessionContext facts={session} />
 
-      <TourLauncher
-        lessons={lessons}
-        open={tourOpen}
-        onToggle={onToggleTours}
-        onOpen={onOpenTour}
-      />
-
-      <LanguageSelect />
-
-      <button
-        type="button"
-        className="icon-btn theme-toggle"
-        onClick={toggle}
-        title={theme === "dark" ? t("theme.light") : t("theme.dark")}
-        aria-label={t("theme.toggle")}
-      >
-        {theme === "dark" ? "☀" : "☾"}
-      </button>
+      <div className="topbar-utils">
+        <ModeToggle mode={mode} onChange={onModeChange} />
+        <TourLauncher
+          lessons={LESSONS}
+          open={tourOpen}
+          onToggle={onToggleTours}
+          onOpen={onOpenTour}
+        />
+        <LanguageSelect />
+        <IconButton
+          icon={theme === "dark" ? Sun : Moon}
+          label={t("theme.toggle")}
+          title={theme === "dark" ? t("theme.light") : t("theme.dark")}
+          onClick={toggle}
+        />
+      </div>
     </header>
   );
 }

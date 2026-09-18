@@ -1,0 +1,210 @@
+/*
+ * Component primitives. Geometry comes from the tokens in base.css so every
+ * control is the same height and every icon the same size.
+ */
+
+/* --- Button: base, then variants ------------------------------------- */
+/* Filled accent means *primary action* only; routine actions are neutral
+   or ghost.
+
+   `.apply` / `.apply.stop` / `.apply.ghost` / `.apply.small` are the legacy
+   names for the same four tones. They are kept so the panels that have not
+   been migrated yet render identically to the ones that have. */
+.btn,
+.apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--control-h);
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-ui);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled),
+.apply:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.btn:focus-visible,
+.apply:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.apply:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn.primary,
+.apply {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--fw-semibold);
+}
+
+.btn.danger,
+.apply.stop {
+  background: var(--bad);
+  color: var(--on-danger);
+  font-weight: var(--fw-semibold);
+}
+
+.btn.ghost,
+.apply.ghost {
+  background: none;
+  color: var(--muted);
+}
+
+.btn.ghost:hover:not(:disabled),
+.apply.ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn.sm,
+.apply.small {
+  height: var(--control-h-toolbar);
+  padding: 0 10px;
+  font-size: var(--fs-secondary);
+}
+
+.btn.block {
+  width: 100%;
+}
+
+/* --- PanelHeader ------------------------------------------------------ */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: var(--panel-header-h);
+  margin-bottom: 10px;
+}
+
+.panel-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--fs-panel);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.panel-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-header.subsection {
+  min-height: 0;
+  margin: 16px 0 8px;
+}
+
+/* --- Metric ----------------------------------------------------------- */
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.metric-label {
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+.metric-value {
+  font-size: var(--fs-metric);
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.metric.sm .metric-value {
+  font-size: var(--fs-major);
+}
+
+/* --- Badge ------------------------------------------------------------ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--fs-telemetry);
+  white-space: nowrap;
+}
+
+.badge.ok {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  color: var(--ok);
+}
+
+.badge.warn {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--warn);
+}
+
+.badge.bad {
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
+  color: var(--bad);
+}
+
+/* --- Toolbar ---------------------------------------------------------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+/* --- InspectorSection ------------------------------------------------- */
+.inspector-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.inspector-section-title {
+  font-size: var(--fs-secondary);
+  font-weight: var(--fw-semibold);
+  color: var(--muted);
+}
+
+/* --- StatusIndicator -------------------------------------------------- */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status-indicator.ok {
+  color: var(--ok);
+}
+
+.status-indicator.bad {
+  color: var(--bad);
+}

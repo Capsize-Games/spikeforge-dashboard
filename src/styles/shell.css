@@ -1,0 +1,235 @@
+/*
+ * The Studio shell: the left navigation rail and the product / session
+ * context header. Both are pure composition — they change nothing about what
+ * each panel does or when it is mounted.
+ */
+
+/* --- left navigation rail --------------------------------------------- */
+
+.nav-rail {
+  display: flex;
+  flex-direction: column;
+  width: var(--rail-collapsed);
+  min-width: var(--rail-collapsed);
+  background: var(--surface-2);
+  border-right: 1px solid var(--line-soft);
+  overflow: hidden;
+  transition: width 140ms ease;
+}
+
+.nav-rail.expanded {
+  width: var(--rail-expanded);
+  min-width: var(--rail-expanded);
+}
+
+.nav-rail-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+}
+
+/* One nav row: icon, label, and an accent strip when it is the active
+   section. 38-40px tall, the geometry of a desktop tool, not a web tab. */
+.rail-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: var(--nav-row-h);
+  padding: 0 11px;
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rail-item:hover {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+.rail-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.rail-item.active {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+.rail-item.active::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.rail-item-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rail-item-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Collapsed: icon only, centred, with the native title as the tooltip. */
+.nav-rail:not(.expanded) .rail-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.nav-rail:not(.expanded) .rail-item-label {
+  display: none;
+}
+
+.nav-rail-foot {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+/* Marks a section whose background work (training, download) is running. */
+.shell-tab-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: shell-tab-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes shell-tab-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-tab-dot {
+    animation: none;
+  }
+
+  .nav-rail {
+    transition: none;
+  }
+}
+
+/* --- product + session context header --------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 52px;
+  padding: 0 18px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.topbar-product {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.topbar-sep {
+  color: var(--line);
+  font-weight: 400;
+}
+
+.brand-section {
+  color: var(--muted);
+  font-size: var(--fs-major);
+  font-weight: 400;
+}
+
+.session-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+}
+
+.session-chip-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--line);
+}
+
+.session-chip-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.topbar-utils {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.loaded-model-bar {
+  padding: 8px 18px 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* --- shared compact controls in the header ---------------------------- */
+
+.language-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+}
+
+.language-select select {
+  height: var(--control-h-toolbar);
+  min-height: var(--control-h-toolbar);
+  padding: 0 6px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface-3);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-secondary);
+}

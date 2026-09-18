@@ -1,18 +1,17 @@
 import { lazy, Suspense, useCallback, useRef } from "react";
 
 import { AnalysisPanels } from "./components/AnalysisPanels";
+import { AppHeader } from "./components/AppHeader";
 import { Controls } from "./components/Controls";
 import { DownloadProgress } from "./components/DownloadProgress";
 import { EnergyPanel } from "./components/EnergyPanel";
 import { HubPanel } from "./components/HubPanel";
-import { LoadedModelPanel } from "./components/LoadedModelPanel";
 import { ModelPanel } from "./components/ModelPanel";
+import { NavRail } from "./components/NavRail";
 import { Section } from "./components/Stepper";
 import { StatusBar } from "./components/StatusBar";
-import { TabBar } from "./components/TabBar";
 import { TabPanel } from "./components/TabPanel";
 import { TargetsPanel } from "./components/TargetsPanel";
-import { TopBar } from "./components/TopBar";
 import { TourCard } from "./components/TourCard";
 import { TrainControls } from "./components/TrainControls";
 import { TrainingPanel } from "./components/TrainingPanel";
@@ -122,29 +121,25 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <TopBar
-          mode={training.state.config.mode}
-          onModeChange={(mode) => training.patch({ mode })}
-          lessons={LESSONS}
-          tourOpen={tour.menuOpen}
-          onToggleTours={tour.toggleMenu}
-          onOpenTour={tour.openLesson}
-        />
+      <NavRail
+        tabs={TABS}
+        active={tabs.active}
+        busy={busy}
+        onSelect={tabs.select}
+      />
 
-        <TabBar
-          tabs={TABS}
-          active={tabs.active}
-          busy={busy}
-          onSelect={tabs.select}
-        />
-
-        {training.state.loaded && (
-          <div className="loaded-model-bar">
-            <LoadedModelPanel loaded={training.state.loaded} />
-          </div>
-        )}
-      </header>
+      <AppHeader
+        mode={training.state.config.mode}
+        onModeChange={(mode) => training.patch({ mode })}
+        active={tabs.active}
+        loaded={training.state.loaded}
+        dataset={config.dataset}
+        coding={config.coding}
+        device={training.state.config.device}
+        tourOpen={tour.menuOpen}
+        onToggleTours={tour.toggleMenu}
+        onOpenTour={tour.openLesson}
+      />
 
       <main className="app-main">
         <TabPanel id="model" active={tabs.active}>

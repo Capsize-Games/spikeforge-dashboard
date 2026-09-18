@@ -10,7 +10,9 @@ import type {
   RasterPayload,
   RasterSource,
 } from "../types";
+import { useI18n } from "../i18n/I18nProvider";
 import { InputRow } from "./InputRow";
+import { InspectorSection } from "./InspectorSection";
 import { NetworkActivity } from "./NetworkActivity";
 import { NirGraphPanel } from "./NirGraphPanel";
 import { NirValidationPanel } from "./NirValidationPanel";
@@ -53,7 +55,12 @@ interface Props {
   onSwitchToEducational: () => void;
 }
 
-/** The viewer tab: model tag, cursor, input, activity, trajectory, NIR. */
+/**
+ * The viewer: the app's hero workspace. The stage (input samples, then the
+ * per-layer network activity) takes most of the width; the inspector column
+ * holds the prediction and the on-demand analysis panels; the transport strip
+ * runs the full width along the bottom.
+ */
 export function ViewerPanels({
   sample,
   eventFrame,
@@ -86,20 +93,10 @@ export function ViewerPanels({
   onRefreshNirValidation,
   onSwitchToEducational,
 }: Props) {
+  const { t } = useI18n();
   return (
-    <div className="viewer-grid">
-      <div className="col-viz">
-        <TimeCursor
-          step={timeStep}
-          numSteps={numSteps}
-          playing={playing}
-          sampleIndex={sampleIndex}
-          onScrub={onScrub}
-          onPlay={onPlay}
-          onStop={onStop}
-          onSelectSample={onSelectSample}
-        />
-
+    <div className="viewer-workspace">
+      <div className="viewer-stage">
         <InputRow
           sample={sample}
           eventFrame={eventFrame}
@@ -120,7 +117,10 @@ export function ViewerPanels({
         />
       </div>
 
-      <div className="col-viz viewer-col-side">
+      <InspectorSection
+        title={t("viewer.inspector")}
+        className="viewer-inspector"
+      >
         <PredictionPanel
           inference={inference}
           timeStep={timeStep}
@@ -143,6 +143,19 @@ export function ViewerPanels({
         <NirValidationPanel
           validation={nirValidation}
           onRefresh={onRefreshNirValidation}
+        />
+      </InspectorSection>
+
+      <div className="viewer-transport">
+        <TimeCursor
+          step={timeStep}
+          numSteps={numSteps}
+          playing={playing}
+          sampleIndex={sampleIndex}
+          onScrub={onScrub}
+          onPlay={onPlay}
+          onStop={onStop}
+          onSelectSample={onSelectSample}
         />
       </div>
     </div>

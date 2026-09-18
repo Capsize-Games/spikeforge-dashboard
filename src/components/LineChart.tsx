@@ -48,6 +48,18 @@ export function LineChart({
     const w = canvas.width;
     const h = canvas.height - top - legendH;
 
+    // Extremely subtle horizontal gridlines: they orient the eye without
+    // competing with the trace. The crosshair below is the only bright mark.
+    ctx.strokeStyle = colors.grid;
+    ctx.lineWidth = 1;
+    for (let row = 1; row < 4; row++) {
+      const y = top + (h * row) / 4;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
     series.forEach((s) => {
       if (s.values.length < 2) return;
       const max = s.max ?? Math.max(...s.values, 1e-6);

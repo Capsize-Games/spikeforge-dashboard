@@ -38,15 +38,6 @@ export function TopBar({
   return (
     <header className="topbar">
       <div className="topbar-product">
-        <span className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            ◈
-          </span>
-          SPIKEFORGE
-        </span>
-        <span className="topbar-sep" aria-hidden="true">
-          /
-        </span>
         <span className="topbar-workspace">{workspace}</span>
       </div>
 

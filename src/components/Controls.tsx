@@ -57,6 +57,12 @@ export function Controls({
 
       <div className="controls-grid">
         <div className="controls-col">
+          <SamplePreview
+            sample={sample}
+            eventFrame={eventFrame}
+            event={eventMode}
+          />
+
           <Section
             title={t("section.data")}
             hint={
@@ -106,12 +112,6 @@ export function Controls({
               onChange={(v) => onChange({ batch_size: v })}
             />
           </Section>
-
-          <SamplePreview
-            sample={sample}
-            eventFrame={eventFrame}
-            event={eventMode}
-          />
         </div>
 
         <div className="controls-col">

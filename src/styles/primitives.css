@@ -127,32 +127,34 @@
 }
 
 /* A slider paired with the numeric box for the same value: the track feels
-   the parameter, the box states it. */
+   the parameter, the box states it. Both fill the field's control cell. */
 .field-scale {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
 }
 
 .field-scale input[type="range"] {
   flex: 1 1 auto;
+  align-self: center;
   min-width: 0;
+  margin: 0 10px;
 }
 
-/* A numeric box is a value, not a form: it sits one surface step above the
-   pane, keeps no border, and right-aligns so magnitudes line up. It is
-   compact and pushed to the right of its row, so the numbers form a column
-   at the pane's right edge rather than a run of empty boxes. Beside a slider
-   it is narrower still, leaving the track the rest of the row. */
+/* A numeric box is a value, not a form: it fills its control cell, keeps no
+   border of its own, and right-aligns so magnitudes line up. Beside a slider
+   it is narrower, and a seam — the same one the label cell uses — separates
+   it from the track. */
 .num-input {
-  flex: 0 0 auto;
-  width: 96px;
-  margin-left: auto;
-  height: var(--control-h);
-  padding: 0 8px;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: var(--control-h);
+  padding: 0 10px;
   border: none;
-  border-radius: var(--radius);
-  background: var(--surface-3);
+  border-radius: 0;
+  background: var(--surface-1);
   color: var(--text);
   font: inherit;
   font-size: var(--fs-ui);
@@ -162,8 +164,9 @@
 }
 
 .field-scale .num-input {
+  flex: 0 0 auto;
   width: 72px;
-  margin-left: 0;
+  border-left: 1px solid var(--line-soft);
 }
 
 .num-input.invalid {

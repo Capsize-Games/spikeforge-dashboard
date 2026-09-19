@@ -1,16 +1,10 @@
 /*
- * Dark-theme refinements to the studio surface: the brand wordmark colour
- * and the focus ring.
+ * Dark-theme refinements to the studio surface: the focus ring.
  *
  * The illuminated header gradient and glow this file used to carry are gone.
  * Accent light is reserved for selected / navigation / live-data / action
  * states, never for chrome (see the tokens in base.css).
  */
-:root:not([data-theme="light"]) .app-header .brand {
-  letter-spacing: 0.025em;
-  color: #e2edff;
-}
-
 :root:not([data-theme="light"]) button:focus-visible,
 :root:not([data-theme="light"]) select:focus-visible,
 :root:not([data-theme="light"]) input:focus-visible {

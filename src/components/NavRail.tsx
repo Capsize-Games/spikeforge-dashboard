@@ -93,6 +93,12 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
       className={expanded ? "nav-rail expanded" : "nav-rail"}
       aria-label={t("tab.sections")}
     >
+      {/* The product mark occupies the header's own height, so the navigation
+          rows begin level with the workspace below the toolbar. */}
+      <div className="nav-rail-mark" aria-hidden="true">
+        <span className="brand-mark">◈</span>
+      </div>
+
       <div
         className="nav-rail-list"
         role="tablist"

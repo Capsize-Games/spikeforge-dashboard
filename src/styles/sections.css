@@ -216,27 +216,43 @@ canvas {
 }
 
 /*
- * A form field is one row: a fixed label column and the control beside it.
- * The label keeps its help tip immediately after the text — never pushed to
- * the far edge, where it floats away from the word it explains — and the
- * control starts at one shared left edge. Vertical rhythm is owned by the
- * container (see .section-body / .pane-body), so a field carries no margin.
+ * A field is one joined control group: a label cell and a control cell that
+ * share a single border and corner, so a setting and its value read as one
+ * unit rather than two unrelated boxes. The label cell is one surface step
+ * lighter than the control beside it — that step, not a second line, is what
+ * tells the two cells apart.
  */
 .field {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: var(--field-label-w) minmax(0, 1fr) auto;
+  align-items: stretch;
+  min-height: var(--control-h);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
   font-size: var(--fs-label);
   color: var(--muted);
 }
 
+/* The help mark is part of the row but after the control, so every row's
+   question mark lines up on the same right edge. */
+.field > .help-tip {
+  align-self: center;
+  margin: 0 10px 0 4px;
+}
+
+.field:focus-within {
+  border-color: var(--accent);
+}
+
 .field-label {
-  flex: 0 0 var(--field-label-w);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 4px;
   min-width: 0;
+  padding: 0 10px;
+  background: var(--surface-2);
+  border-right: 1px solid var(--line-soft);
 }
 
 .field b {
@@ -245,13 +261,15 @@ canvas {
   font-variant-numeric: tabular-nums;
 }
 
-/* Pickers and text entries take the rest of the row; their right edges line
-   up because the label column is fixed. A numeric box is compact instead
-   (see primitives.css) and right-aligns inside the same column. */
+/* The control cell is the quieter surface; the label carries the weight. */
 .field select,
 .field .text-input {
-  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: var(--surface-1);
 }
 
 .field input[type="range"] {
@@ -259,9 +277,15 @@ canvas {
   accent-color: var(--accent);
 }
 
-/* A checkbox is its own label, so it takes the whole row. */
+/* A checkbox is its own label, so it takes the whole row and the help mark
+   keeps its place at the end. */
+.field.check {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .field.check .field-label {
-  flex: 1 1 auto;
+  border-right: none;
+  gap: 8px;
 }
 
 /* --- measured line charts --- */

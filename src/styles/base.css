@@ -254,17 +254,8 @@ body {
   color: var(--bad);
 }
 
-/* Brand mark plus wordmark; the dark-theme colour lives in capsize.css. */
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--fs-major);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.02em;
-  color: var(--text);
-}
-
+/* The product mark, now carried by the navigation rail rather than the
+   toolbar. */
 .brand-mark {
   color: var(--accent);
   font-size: 15px;

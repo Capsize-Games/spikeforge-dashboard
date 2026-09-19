@@ -124,10 +124,7 @@ export function NumberField({
 
   return (
     <div className="field" data-field={label} data-tour={tour}>
-      <span className="field-label">
-        <span>{label}</span>
-        <HelpTip text={help} />
-      </span>
+      <span className="field-label">{label}</span>
       {range ? (
         <span className="field-scale">
           <input
@@ -145,6 +142,7 @@ export function NumberField({
       ) : (
         box
       )}
+      <HelpTip text={help} />
     </div>
   );
 }

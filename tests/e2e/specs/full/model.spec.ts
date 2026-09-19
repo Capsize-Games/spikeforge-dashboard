@@ -42,13 +42,14 @@ test.describe("checkpoints", () => {
     // The baseline was trained at 10 time steps while the interface defaults
     // to 100. A load that does not restore the checkpoint's own encoding
     // would fail the server's compatibility check on the next inference.
-    await expect(dashboard.field("num_steps").locator("b")).toHaveText("100");
+    const numSteps = dashboard.field("num_steps").locator(".num-input");
+    await expect(numSteps).toHaveValue("100");
 
     await dashboard.loadModel(BASELINE);
     await expect(dashboard.currentModel).toHaveText(BASELINE, {
       timeout: 120_000,
     });
-    await expect(dashboard.field("num_steps").locator("b")).toHaveText("10");
+    await expect(numSteps).toHaveValue("10");
 
     // A loaded checkpoint locks the architecture and encoding controls, so
     // they cannot drift out of step with the weights.

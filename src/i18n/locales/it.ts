@@ -11,6 +11,7 @@ export const IT: TranslationSet = {
   "tab.running": "in esecuzione",
   "nav.expand": "Espandi la navigazione",
   "nav.collapse": "Comprimi la navigazione",
+  "nav.donate": "Sostieni il progetto",
   "viewer.inspector": "Ispettore",
   "theme.light": "Passa al tema chiaro",
   "theme.dark": "Passa al tema scuro",

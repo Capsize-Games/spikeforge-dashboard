@@ -5,7 +5,10 @@ interface Props {
   icon: LucideIcon;
   /** Accessible name; also the tooltip unless `title` overrides it. */
   label: string;
-  onClick: () => void;
+  /** Action for a button; omit when `href` makes the control a link. */
+  onClick?: () => void;
+  /** When set, the control is an anchor that opens in a new tab. */
+  href?: string;
   disabled?: boolean;
   /** Tooltip text when it should differ from the accessible name. */
   title?: string;
@@ -22,16 +25,37 @@ export function IconButton({
   icon: Icon,
   label,
   onClick,
+  href,
   disabled = false,
   title,
   className,
   expanded,
   menu,
 }: Props) {
+  const classes = className === undefined ? "icon-btn" : `icon-btn ${className}`;
+  const glyph = <Icon size={16} strokeWidth={1.75} aria-hidden="true" />;
+
+  // A link leaves the application, so it opens in a new tab and carries the
+  // usual `rel` guard; a button keeps the menu/expanded semantics.
+  if (href !== undefined) {
+    return (
+      <a
+        className={classes}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={title ?? label}
+        aria-label={label}
+      >
+        {glyph}
+      </a>
+    );
+  }
+
   return (
     <button
       type="button"
-      className={className === undefined ? "icon-btn" : `icon-btn ${className}`}
+      className={classes}
       onClick={onClick}
       disabled={disabled}
       title={title ?? label}
@@ -39,7 +63,7 @@ export function IconButton({
       aria-expanded={expanded}
       aria-haspopup={menu === true ? "menu" : undefined}
     >
-      <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+      {glyph}
     </button>
   );
 }

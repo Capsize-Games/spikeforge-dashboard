@@ -27,6 +27,7 @@ export const EN = {
   "tab.running": "running",
   "nav.expand": "Expand navigation",
   "nav.collapse": "Collapse navigation",
+  "nav.donate": "Support the project",
   "viewer.inspector": "Inspector",
   "theme.light": "Switch to light theme",
   "theme.dark": "Switch to dark theme",

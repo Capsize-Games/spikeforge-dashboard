@@ -1,10 +1,17 @@
+import { Heart } from "lucide-react";
+
 import { LESSONS } from "../tour/lessons";
 import type { ExecutionMode } from "../types";
+import { useI18n } from "../i18n/I18nProvider";
+import { IconButton } from "./IconButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { ModeToggle } from "./ModeToggle";
 import { SessionContext } from "./SessionContext";
 import type { SessionFacts } from "./SessionContext";
 import { TourLauncher } from "./TourLauncher";
+
+/** Where the project's donation page lives. */
+const DONATE_URL = "https://capsize.online/donate";
 
 interface Props {
   mode: ExecutionMode;
@@ -35,6 +42,7 @@ export function TopBar({
   onToggleTours,
   onOpenTour,
 }: Props) {
+  const { t } = useI18n();
   return (
     <header className="topbar">
       <div className="topbar-product">
@@ -52,6 +60,12 @@ export function TopBar({
           onOpen={onOpenTour}
         />
         <LanguageSelect />
+        <IconButton
+          icon={Heart}
+          label={t("nav.donate")}
+          href={DONATE_URL}
+          className="donate"
+        />
       </div>
     </header>
   );

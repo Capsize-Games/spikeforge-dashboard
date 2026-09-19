@@ -17,6 +17,7 @@ export const KO: TranslationSet = {
   "tab.running": "실행 중",
   "nav.expand": "탐색 펼치기",
   "nav.collapse": "탐색 접기",
+  "nav.donate": "프로젝트 후원",
   "viewer.inspector": "검사기",
   "theme.light": "라이트 테마로 전환",
   "theme.dark": "다크 테마로 전환",

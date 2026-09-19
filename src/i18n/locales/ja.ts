@@ -18,6 +18,7 @@ export const JA: TranslationSet = {
   "tab.running": "実行中",
   "nav.expand": "ナビゲーションを展開",
   "nav.collapse": "ナビゲーションを折りたたむ",
+  "nav.donate": "プロジェクトを支援",
   "viewer.inspector": "インスペクター",
   "theme.light": "ライトテーマに切り替える",
   "theme.dark": "ダークテーマに切り替える",

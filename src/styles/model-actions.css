@@ -28,7 +28,14 @@
   cursor: pointer;
   font-size: var(--fs-secondary);
   line-height: 1;
+  text-decoration: none;
   transition: background var(--t-fast), color var(--t-fast);
+}
+
+/* The donation link is an icon button that leaves the app; a heart is the
+   one place in the chrome a warm colour is allowed. */
+.icon-btn.donate:hover {
+  color: var(--bad);
 }
 
 .icon-btn:not(:disabled):hover {

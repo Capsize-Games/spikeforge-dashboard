@@ -42,15 +42,16 @@
   list-style: none;
 }
 
+/* The selected entry is a tinted surface rather than a bar down one side:
+   the state is legible without spending a line on it. */
 .hub-card {
-  border-left: 2px solid transparent;
   border-radius: var(--radius);
   background: var(--surface-2);
+  transition: background var(--t-fast);
 }
 
 .hub-card.selected {
-  border-left-color: var(--accent);
-  background: var(--surface-3);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
 }
 
 .hub-card-main {

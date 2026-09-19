@@ -1,6 +1,9 @@
 /*
- * Component primitives. Geometry comes from the tokens in base.css so every
+ * Control primitives. Geometry comes from the tokens in base.css so every
  * control is the same height and every icon the same size.
+ *
+ * The read-out primitives — Metric, Badge, StatusIndicator and the fact
+ * grids — live in readouts.css beside the panels that state their numbers.
  */
 
 /* --- Button: base, then variants ------------------------------------- */
@@ -27,6 +30,7 @@
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
 }
 
 .btn:hover:not(:disabled),
@@ -114,60 +118,71 @@
   margin: 16px 0 8px;
 }
 
-/* --- Metric ----------------------------------------------------------- */
-.metric {
+/* --- Field controls --------------------------------------------------- */
+/* A field is a label row plus one control. The label is 12px and the control
+   30px, so "this is a setting" and "this is its value" are two different
+   ranks rather than one run of 13px text. */
+.field-label {
+  font-size: var(--fs-label);
+}
+
+/* A slider paired with the numeric box for the same value: the track feels
+   the parameter, the box states it. */
+.field-scale {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-scale input[type="range"] {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.metric-label {
-  font-size: var(--fs-micro);
-  color: var(--muted);
-}
-
-.metric-value {
-  font-size: var(--fs-metric);
-  font-weight: var(--fw-semibold);
-  line-height: 1.1;
-  color: var(--text);
-}
-
-.metric.sm .metric-value {
-  font-size: var(--fs-major);
-}
-
-/* --- Badge ------------------------------------------------------------ */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px;
+/* A numeric box is a value, not a form: it sits one surface step above the
+   pane, keeps no border, and right-aligns so magnitudes line up. It carries
+   normal interface text — one rank above the label that names it. */
+.num-input {
+  flex: 0 0 auto;
+  width: 96px;
+  height: var(--control-h);
+  padding: 0 8px;
   border: none;
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--muted);
-  font-size: var(--fs-telemetry);
-  white-space: nowrap;
+  border-radius: var(--radius);
+  background: var(--surface-3);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-ui);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  transition: background var(--t-fast);
 }
 
-.badge.ok {
-  background: color-mix(in srgb, var(--ok) 14%, transparent);
-  color: var(--ok);
+.field-scale .num-input {
+  width: 72px;
 }
 
-.badge.warn {
-  background: color-mix(in srgb, var(--warn) 14%, transparent);
-  color: var(--warn);
-}
-
-.badge.bad {
-  background: color-mix(in srgb, var(--bad) 14%, transparent);
+.num-input.invalid {
   color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 12%, var(--surface-3));
+}
+
+.num-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* No spin buttons anywhere: a stepper in this application is the arrow keys
+   on the field itself, and the native widgets are too wide for a box that has
+   to sit beside a slider or inside a 260px pane. */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 /* --- Toolbar ---------------------------------------------------------- */
+/* A strip of controls inside a pane: one surface step up from it, no border
+   — the surface difference is the whole edge. */
 .toolbar {
   display: flex;
   align-items: center;
@@ -186,25 +201,7 @@
 }
 
 .inspector-section-title {
-  font-size: var(--fs-secondary);
+  font-size: var(--fs-label);
   font-weight: var(--fw-semibold);
   color: var(--muted);
-}
-
-/* --- StatusIndicator -------------------------------------------------- */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--fs-secondary);
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.status-indicator.ok {
-  color: var(--ok);
-}
-
-.status-indicator.bad {
-  color: var(--bad);
 }

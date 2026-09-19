@@ -116,10 +116,9 @@
 .tour-card-note {
   margin: 8px 0 0;
   padding: 6px 8px;
-  border-left: 2px solid var(--warn);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--warn) 10%, transparent);
-  font-size: var(--fs-micro);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  font-size: var(--fs-helper);
   font-style: italic;
   line-height: 1.4;
   color: var(--warn);

@@ -42,10 +42,10 @@
 .mismatch {
   margin: 6px 0 10px;
   padding: 8px 10px;
-  border-left: 2px solid var(--warn);
-  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
   color: var(--warn);
-  font-size: var(--fs-secondary);
+  font-size: var(--fs-label);
   line-height: 1.4;
 }
 

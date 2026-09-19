@@ -50,8 +50,9 @@ export function ModelPanel({
 
   return (
     <section className="model-panel" data-testid="model-panel">
+      {/* The pane heading already names this pane, so the row starts with the
+          state that changes: which checkpoint is loaded. */}
       <header className="model-head">
-        <span className="model-title">{t("section.model")}</span>
         <span className="model-current">
           <span className="model-current-label">{t("model.current")}</span>
           {loading ? (

@@ -157,6 +157,11 @@ export function ViewerPanels({
           onStop={onStop}
           onSelectSample={onSelectSample}
         />
+        {/* What the execution mode does to capture, stated where the captured
+            frames are rather than in the global toolbar. */}
+        <span className="capture-note" data-testid="capture-state">
+          {mode === "educational" ? t("mode.captureOn") : t("mode.captureOff")}
+        </span>
       </div>
     </div>
   );

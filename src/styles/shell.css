@@ -6,15 +6,17 @@
 
 /* --- left navigation rail --------------------------------------------- */
 
+/* The rail is told apart from the workspace by its surface step, not by a
+   rule down the window: a line here would be ink spent on a boundary the
+   two surfaces already draw. */
 .nav-rail {
   display: flex;
   flex-direction: column;
   width: var(--rail-collapsed);
   min-width: var(--rail-collapsed);
   background: var(--surface-2);
-  border-right: 1px solid var(--line-soft);
   overflow: hidden;
-  transition: width 140ms ease;
+  transition: width var(--t-fast);
 }
 
 .nav-rail.expanded {
@@ -29,11 +31,14 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 8px;
+  padding: 10px 7px;
 }
 
-/* One nav row: icon, label, and an accent strip when it is the active
-   section. 38-40px tall, the geometry of a desktop tool, not a web tab. */
+/* One nav row: a 42px hit area holding an 18px icon and a label, with a
+   raised surface plus an accent strip when it is the active workspace.
+   Two groups — the workspaces that build a model, and the ones that fetch,
+   ship or chain one — separated by spacing alone, so the navigation adds no
+   line to the window. */
 .rail-item {
   position: relative;
   display: flex;
@@ -41,7 +46,6 @@
   gap: 11px;
   height: var(--nav-row-h);
   padding: 0 11px;
-  border: none;
   border-radius: var(--radius);
   background: none;
   color: var(--muted);
@@ -50,6 +54,11 @@
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.rail-item.group-start {
+  margin-top: 10px;
 }
 
 .rail-item:hover {
@@ -63,15 +72,15 @@
 }
 
 .rail-item.active {
-  background: var(--surface-1);
+  background: var(--surface-3);
   color: var(--text);
 }
 
 .rail-item.active::before {
   content: "";
   position: absolute;
-  top: 8px;
-  bottom: 8px;
+  top: 9px;
+  bottom: 9px;
   left: 0;
   width: 2px;
   border-radius: 2px;
@@ -82,6 +91,9 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: var(--icon);
+  height: var(--icon);
 }
 
 .rail-item-label {
@@ -100,12 +112,16 @@
   display: none;
 }
 
+/* The shell's own settings, anchored at the bottom of the rail: the theme,
+   and the control that expands the labels. Stacked, because two 28px buttons
+   do not fit across a 54px rail. */
 .nav-rail-foot {
   flex: 0 0 auto;
   display: flex;
-  justify-content: center;
-  padding: 8px;
-  border-top: 1px solid var(--line-soft);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 10px;
 }
 
 /* Marks a section whose background work (training, download) is running. */
@@ -133,14 +149,11 @@
   .shell-tab-dot {
     animation: none;
   }
-
-  .nav-rail {
-    transition: none;
-  }
 }
 
 /* --- product + session context header --------------------------------- */
 
+/* One surface step above the workspace below it, and that is the seam. */
 .topbar {
   display: flex;
   align-items: center;
@@ -148,7 +161,6 @@
   min-height: 52px;
   padding: 0 18px;
   background: var(--surface-2);
-  border-bottom: 1px solid var(--line-soft);
 }
 
 .topbar-product {
@@ -164,10 +176,16 @@
   font-weight: 400;
 }
 
-.brand-section {
-  color: var(--muted);
-  font-size: var(--fs-major);
-  font-weight: 400;
+/* The workspace title: the top rank of the type scale, and the only thing in
+   the toolbar at it. */
+.topbar-workspace {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-workspace);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
 }
 
 .session-context {
@@ -183,14 +201,14 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  font-size: var(--fs-secondary);
+  font-size: var(--fs-label);
   color: var(--muted);
 }
 
 .session-chip-icon {
   flex: 0 0 auto;
   display: inline-flex;
-  color: var(--line);
+  color: var(--muted);
 }
 
 .session-chip-value {
@@ -204,13 +222,8 @@
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 0 0 auto;
-}
-
-.loaded-model-bar {
-  padding: 8px 18px 10px;
-  border-bottom: 1px solid var(--line-soft);
 }
 
 /* --- shared compact controls in the header ---------------------------- */

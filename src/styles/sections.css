@@ -213,7 +213,7 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: var(--fs-ui);
+  font-size: var(--fs-label);
   margin-bottom: 10px;
   color: var(--muted);
 }

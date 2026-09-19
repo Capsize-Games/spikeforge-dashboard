@@ -11,14 +11,18 @@
  */
 :root {
   /* --- surface levels (near-black base, three raised steps) --- */
-  --canvas: #05070c;
-  --surface-1: #0a0e16;
-  --surface-2: #0e131d;
-  --surface-3: #141a26;
+  --canvas: #070a0f;
+  --surface-1: #0b1017;
+  --surface-2: #0f151e;
+  --surface-3: #141c27;
 
-  /* --- separators --- */
-  --line-soft: #171d29;
-  --line: #26303f;
+  /* --- separators ---
+     Translucent rather than opaque: a separator is a seam inside one surface
+     (a pane edge, a header underline), not a surface of its own. On the dark
+     hierarchy 6% white lands a little above --surface-2 and stays below
+     --surface-3, so a line never outranks the content next to it. */
+  --line-soft: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.12);
 
   /* --- ambient background wash (subtle, never neon) --- */
   --ambient:
@@ -43,30 +47,44 @@
   --warn: #e3b341;
   --on-danger: #ffffff;
 
-  /* --- typography scale --- */
-  --fs-workspace: 20px; /* workspace title */
+  /* --- typography scale ---
+     Five ranks, in the order they are read: the workspace title, a pane
+     heading, a section micro-heading, normal interface text, and the two
+     text ranks below it (field labels, helper text). Anything that reads
+     like a heading uses a rank from the top three; nothing needs a sixth. */
+  --fs-workspace: 17px; /* workspace title */
   --fs-major: 15px; /* major section */
-  --fs-panel: 13px; /* panel title, normal UI */
-  --fs-ui: 13px;
-  --fs-secondary: 12px;
-  --fs-micro: 11px;
-  --fs-telemetry: 10px;
+  --fs-pane: 13px; /* pane heading */
+  --fs-section: 11px; /* section micro-heading */
+  --fs-ui: 13px; /* normal interface text */
+  --fs-label: 12px; /* field label */
+  --fs-helper: 11px; /* helper text */
+  --fs-panel: 13px; /* legacy alias of --fs-ui */
+  --fs-secondary: 12px; /* legacy alias of --fs-label */
+  --fs-micro: 11px; /* legacy alias of --fs-helper */
+  --fs-telemetry: 10px; /* uppercase telemetry readouts only */
   --fs-metric: 26px; /* major metric */
   --fw-semibold: 600;
 
   /* --- control geometry --- */
   --control-h: 30px; /* standard control */
   --control-h-toolbar: 28px;
-  --icon: 16px;
+  --icon: 18px; /* navigation and toolbar icon size */
   --panel-header-h: 36px;
-  --nav-row-h: 38px;
-  --rail-collapsed: 64px;
+  --nav-row-h: 42px;
+  --rail-collapsed: 54px;
   --rail-expanded: 208px;
   --radius: 4px;
 
   /* --- depth --- */
   --overlay: rgba(5, 7, 12, 0.82);
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+
+  /* --- motion ---
+     One duration for every hover and focus state: long enough to read as a
+     transition, short enough that a pointer crossing a rack of controls does
+     not leave a trail of them. */
+  --t-fast: 140ms ease;
   color-scheme: dark;
 
   /* --- legacy aliases (do not add new uses) --- */
@@ -79,14 +97,22 @@
   --canvas-bg: var(--canvas);
 }
 
+/* A reduced-motion preference collapses every hover and focus transition at
+   once, because they all read the one duration token. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+  }
+}
+
 /* --- light theme (toggled via <html data-theme="light">) --- */
 [data-theme="light"] {
   --canvas: #eef1f5;
   --surface-1: #ffffff;
   --surface-2: #f4f6f8;
   --surface-3: #ffffff;
-  --line-soft: #e7ebf0;
-  --line: #d0d7de;
+  --line-soft: rgba(31, 35, 40, 0.08);
+  --line: rgba(31, 35, 40, 0.16);
 
   --ambient:
     radial-gradient(
@@ -149,10 +175,11 @@ body {
 }
 
 /*
- * Fixed shell: the navigation rail is a whole-height column, the header and
- * footer stay put, and only .app-main scrolls. Named areas keep the rail out
- * of the document flow order, so no extra wrapper element is needed.
- * Dialogs and the tour card are position: fixed and take no grid cell.
+ * Fixed shell: the navigation rail is a whole-height column, the toolbar and
+ * status bar stay put, and the workspace between them fills the rest. Named
+ * areas keep the rail out of the document flow order, so no extra wrapper
+ * element is needed. Dialogs and the tour card are position: fixed and take
+ * no grid cell.
  */
 .app {
   height: 100%;
@@ -176,16 +203,24 @@ body {
   grid-area: header;
 }
 
+/*
+ * The workspace: a full-height region with no page padding and no page
+ * scroll, so a section that is one screenful of content uses one screenful
+ * of window instead of floating in the top half of it. Panes scroll
+ * internally (see dock.css); the workspace itself does not scroll
+ * horizontally and leaves no gap under short content.
+ */
 .app-main {
   grid-area: main;
   min-height: 0;
   min-width: 0;
-  overflow-y: auto;
-  padding: 14px 18px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
+/* The status bar is told apart from the workspace by its surface step rather
+   than by another rule across the window. */
 .app-footer {
   grid-area: footer;
   display: flex;

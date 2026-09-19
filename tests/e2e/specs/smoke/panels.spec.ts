@@ -23,6 +23,44 @@ test.describe("panels", () => {
     await expect(dashboard.tourTarget("neuron")).toBeVisible();
   });
 
+  /**
+   * Model & Data is the docked workspace: an asset browser, the data and
+   * encoding editor, and the network inspector, side by side and each as tall
+   * as the workspace. A regression that flattened it back into cards stacked
+   * in columns would leave every selector above passing, so the composition
+   * itself is asserted here.
+   */
+  test("model tab docks three full-height panes", async ({ dashboard }) => {
+    const panel = await dashboard.tab("model");
+    const assets = panel.locator(".dock-pane--assets");
+    const editor = panel.locator(".dock-pane--editor");
+    const inspector = panel.locator(".dock-pane--inspector");
+
+    for (const pane of [assets, editor, inspector]) {
+      await expect(pane).toBeVisible();
+    }
+
+    const boxes = await Promise.all(
+      [assets, editor, inspector].map((pane) => pane.boundingBox()),
+    );
+    const [left, middle, right] = boxes;
+    if (left === null || middle === null || right === null) {
+      throw new Error("a docked pane has no layout box");
+    }
+
+    // Left to right, in that order, and touching: adjacent panes share an
+    // edge rather than sitting in a gutter.
+    expect(Math.round(left.x + left.width)).toBe(Math.round(middle.x));
+    expect(Math.round(middle.x + middle.width)).toBe(Math.round(right.x));
+
+    // Each pane fills the workspace: the shell leaves no gap below a short
+    // form, and none of the three is shorter than another.
+    const heights = new Set(boxes.map((box) => Math.round(box?.height ?? 0)));
+    expect(heights.size).toBe(1);
+    const workspace = await panel.boundingBox();
+    expect(Math.round(left.height)).toBe(Math.round(workspace?.height ?? 0));
+  });
+
   test("viewer tab shows the input, prediction, and trajectory panels", async ({
     dashboard,
   }) => {

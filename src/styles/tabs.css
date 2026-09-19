@@ -3,6 +3,11 @@
 /*
  * A panel is a column that fills the workspace. There is no max-width: a
  * desktop window is the workspace, so the content uses all of it.
+ *
+ * A workspace whose content is taller than the window scrolls here, in its own
+ * region, rather than pushing the shell out of shape. The docked workspace is
+ * unaffected: its panes take the panel's height exactly and scroll inside
+ * themselves, so this region has nothing left over to scroll.
  */
 .tab-panel {
   display: flex;
@@ -11,6 +16,7 @@
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
 }
 
 /* An inactive tab is hidden rather than unmounted, so its panels keep
@@ -33,13 +39,6 @@
   min-height: 0;
 }
 
-/* Model & Data: the model panel is short next to the much longer controls
-   stack, so give it just the width it needs and let Controls split into
-   two columns (see .controls-cols) instead of one tall one. */
-.tab-cols-model {
-  grid-template-columns: minmax(260px, 320px) 1fr;
-}
-
 .tab-col {
   display: flex;
   flex-direction: column;
@@ -55,10 +54,6 @@
 
 @media (max-width: 900px) {
   .tab-cols {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .controls-cols {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -1,24 +1,13 @@
-import { Binary, Boxes, Cpu, Database } from "lucide-react";
+import { Boxes, Database } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { useI18n } from "../i18n/I18nProvider";
-import type { TranslationKey } from "../i18n/translations";
-import type { CodingType } from "../types";
 
-/** Facts the header can show; each is null when it is not known yet. */
+/** Facts the toolbar can show; each is null when it is not known yet. */
 export interface SessionFacts {
   model: string | null;
   dataset: string | null;
-  coding: CodingType | null;
-  device: string | null;
 }
-
-const CODING_KEYS: Record<CodingType, TranslationKey> = {
-  rate: "coding.rate",
-  latency: "coding.latency",
-  delta: "coding.delta",
-  random: "coding.random",
-};
 
 interface Chip {
   key: string;
@@ -28,9 +17,13 @@ interface Chip {
 }
 
 /**
- * Quiet session context for the header: the loaded model, dataset, encoding,
- * and device. Nothing is invented here — a fact whose value is unknown renders
- * nothing at all rather than a placeholder.
+ * The two session facts the toolbar carries: the loaded checkpoint and the
+ * configured dataset.
+ *
+ * These are what the session is *working on*. The encoding and the device are
+ * settings rather than identity, so they live in the panes that own them, and
+ * the toolbar stays a header instead of a line of debug metadata. A fact whose
+ * value is unknown renders nothing at all rather than a placeholder.
  */
 export function SessionContext({ facts }: { facts: SessionFacts }) {
   const { t } = useI18n();
@@ -50,22 +43,6 @@ export function SessionContext({ facts }: { facts: SessionFacts }) {
       icon: Database,
       label: t("field.dataset"),
       value: facts.dataset,
-    });
-  }
-  if (facts.coding !== null) {
-    chips.push({
-      key: "coding",
-      icon: Binary,
-      label: t("field.coding"),
-      value: t(CODING_KEYS[facts.coding]),
-    });
-  }
-  if (facts.device !== null) {
-    chips.push({
-      key: "device",
-      icon: Cpu,
-      label: t("field.device"),
-      value: facts.device.toUpperCase(),
     });
   }
 

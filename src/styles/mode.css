@@ -13,38 +13,38 @@
   color: var(--muted);
 }
 
+/* A recessed track with a raised selected option. The selected mode is a
+   quiet state — surface and label, never a saturated fill — because which
+   mode is on is a fact about the session, not an action being taken. */
 .mode-options {
   display: inline-flex;
+  gap: 2px;
+  padding: 2px;
   border-radius: var(--radius);
-  background: var(--surface-3);
-  overflow: hidden;
+  background: var(--surface-1);
 }
 
 .mode-option {
-  height: var(--control-h-toolbar);
-  padding: 0 12px;
+  height: calc(var(--control-h-toolbar) - 4px);
+  padding: 0 11px;
   border: none;
+  border-radius: 2px;
   background: none;
   color: var(--muted);
   font: inherit;
-  font-size: var(--fs-secondary);
+  font-size: var(--fs-label);
   cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
 }
 
-.mode-option:hover {
+.mode-option:hover:not(.active) {
   color: var(--text);
 }
 
 .mode-option.active {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--surface-3);
+  color: var(--text);
   font-weight: var(--fw-semibold);
-}
-
-.mode-note {
-  font-size: var(--fs-micro);
-  font-style: italic;
-  color: var(--muted);
 }
 
 /* --- architecture note in the Model section --- */
@@ -57,18 +57,18 @@
 }
 
 /* --- dataset modality note (encoder-neutral for event datasets) --- */
+/* The tint carries the note; a second edge down its side would be one more
+   line in a pane that is trying to stay quiet. */
 .modality-note {
   margin: 0 0 8px;
   padding: 6px 8px;
-  border-left: 2px solid var(--accent);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--text);
-  font-size: var(--fs-micro);
+  font-size: var(--fs-helper);
   line-height: 1.4;
 }
 
 .modality-note.warn {
-  border-left-color: var(--warn);
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
 }

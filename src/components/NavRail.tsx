@@ -5,7 +5,9 @@ import {
   Boxes,
   ChartLine,
   Library,
+  Moon,
   PanelLeft,
+  Sun,
   Workflow,
   Zap,
 } from "lucide-react";
@@ -14,6 +16,7 @@ import type { LucideIcon } from "lucide-react";
 import { TAB_HINT_KEYS, TAB_LABEL_KEYS } from "../tabLabels";
 import { tabButtonId, tabPanelId } from "../tabs";
 import type { TabDef, TabId } from "../tabs";
+import { useTheme } from "../theme";
 import { useI18n } from "../i18n/I18nProvider";
 import { IconButton } from "./IconButton";
 
@@ -27,6 +30,14 @@ const ICONS: Record<TabId, LucideIcon> = {
   pipeline: Workflow,
 };
 
+/**
+ * The rail reads as two groups: the workspaces that build a model (Model &
+ * Data, Viewer, Training) and the ones that fetch, ship or chain one (Hub,
+ * Deployment, Pipeline). The break is spacing rather than a rule, so grouping
+ * costs the window no extra line.
+ */
+const GROUP_BREAK_BEFORE: TabId = "hub";
+
 interface Props {
   tabs: readonly TabDef[];
   active: TabId;
@@ -36,18 +47,20 @@ interface Props {
 }
 
 /**
- * The left navigation rail. It only switches which panel is visible — nothing
- * is mounted or unmounted here, so a running training job, hub download, or
- * animation is unaffected by switching.
+ * The left navigation rail. It only switches which workspace is visible —
+ * nothing is mounted or unmounted here, so a running training job, hub
+ * download, or animation is unaffected by switching.
  *
- * Collapsed it is 64px of icons with the section hint as the tooltip;
- * expanded it is 208px with labels. It is still the `tablist` the guided tour
- * and the end-to-end suite address (`#tab-<id>` / `#tabpanel-<id>`).
+ * Collapsed it is 54px of 18px icons in 42px rows, with the section hint as
+ * the tooltip; expanded it is 208px with labels. The theme control sits at its
+ * foot with the shell's own settings. It is still the `tablist` the guided
+ * tour and the end-to-end suite address (`#tab-<id>` / `#tabpanel-<id>`).
  */
 export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const [expanded, setExpanded] = useState(false);
   const { t } = useI18n();
+  const { theme, toggle } = useTheme();
 
   /** Standard tablist keys: move the selection and focus together. Up/Down
    * suit a vertical rail; Left/Right stay for muscle memory. */
@@ -92,6 +105,7 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
           const Icon = ICONS[tab.id];
           const label = t(TAB_LABEL_KEYS[tab.id]);
           const hint = t(TAB_HINT_KEYS[tab.id]);
+          const group = tab.id === GROUP_BREAK_BEFORE ? " group-start" : "";
           return (
             <button
               key={tab.id}
@@ -100,7 +114,7 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
               }}
               type="button"
               id={tabButtonId(tab.id)}
-              className={selected ? "rail-item active" : "rail-item"}
+              className={`rail-item${selected ? " active" : ""}${group}`}
               role="tab"
               aria-selected={selected}
               aria-controls={tabPanelId(tab.id)}
@@ -110,7 +124,7 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
               onClick={() => onSelect(tab.id)}
             >
               <span className="rail-item-icon">
-                <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+                <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
               </span>
               <span className="rail-item-label">{label}</span>
               {running && <span className="shell-tab-dot" aria-hidden="true" />}
@@ -120,6 +134,12 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
       </div>
 
       <div className="nav-rail-foot">
+        <IconButton
+          icon={theme === "dark" ? Sun : Moon}
+          label={t("theme.toggle")}
+          title={theme === "dark" ? t("theme.light") : t("theme.dark")}
+          onClick={toggle}
+        />
         <IconButton
           icon={PanelLeft}
           label={expanded ? t("nav.collapse") : t("nav.expand")}

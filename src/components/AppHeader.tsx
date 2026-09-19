@@ -1,35 +1,30 @@
-import type {
-  CodingType,
-  DeviceChoice,
-  ExecutionMode,
-  ModelLoadedPayload,
-} from "../types";
+import type { ExecutionMode, ModelLoadedPayload } from "../types";
 import type { TabId } from "../tabs";
 import { TAB_LABEL_KEYS } from "../tabLabels";
 import { useI18n } from "../i18n/I18nProvider";
-import { LoadedModelPanel } from "./LoadedModelPanel";
 import { TopBar } from "./TopBar";
 import type { SessionFacts } from "./SessionContext";
 
 interface Props {
   mode: ExecutionMode;
   onModeChange: (mode: ExecutionMode) => void;
-  /** The section currently shown, so the header can name it. */
+  /** The workspace (section) currently shown, so the toolbar can name it. */
   active: TabId;
   /** Session facts read from App state; an unknown value renders nothing. */
   loaded: ModelLoadedPayload | null;
   dataset: string;
-  coding: CodingType;
-  device: DeviceChoice;
   tourOpen: boolean;
   onToggleTours: () => void;
   onOpenTour: (id: string) => void;
 }
 
 /**
- * The fixed header: the product / session-context bar plus, when a checkpoint
- * is loaded, its one-row summary. Both live outside the scrolling workspace so
- * they stay visible whichever section is shown.
+ * The fixed toolbar. It states where the session is (the active workspace) and
+ * what it is working on (the loaded checkpoint and the dataset).
+ *
+ * The checkpoint's own numbers — accuracy, input mode, hidden width, device —
+ * are summarised in the network inspector instead, which is where they are
+ * read and where the device is set; a toolbar is not the place for them.
  */
 export function AppHeader({
   mode,
@@ -37,8 +32,6 @@ export function AppHeader({
   active,
   loaded,
   dataset,
-  coding,
-  device,
   tourOpen,
   onToggleTours,
   onOpenTour,
@@ -47,8 +40,6 @@ export function AppHeader({
   const session: SessionFacts = {
     model: loaded?.name ?? null,
     dataset,
-    coding,
-    device,
   };
 
   return (
@@ -56,18 +47,12 @@ export function AppHeader({
       <TopBar
         mode={mode}
         onModeChange={onModeChange}
-        section={t(TAB_LABEL_KEYS[active])}
+        workspace={t(TAB_LABEL_KEYS[active])}
         session={session}
         tourOpen={tourOpen}
         onToggleTours={onToggleTours}
         onOpenTour={onOpenTour}
       />
-
-      {loaded !== null && (
-        <div className="loaded-model-bar">
-          <LoadedModelPanel loaded={loaded} />
-        </div>
-      )}
     </header>
   );
 }

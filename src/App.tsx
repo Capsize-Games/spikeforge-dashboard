@@ -2,18 +2,15 @@ import { lazy, Suspense, useCallback, useRef } from "react";
 
 import { AnalysisPanels } from "./components/AnalysisPanels";
 import { AppHeader } from "./components/AppHeader";
-import { Controls } from "./components/Controls";
 import { DownloadProgress } from "./components/DownloadProgress";
 import { EnergyPanel } from "./components/EnergyPanel";
 import { HubPanel } from "./components/HubPanel";
-import { ModelPanel } from "./components/ModelPanel";
+import { ModelWorkspace } from "./components/ModelWorkspace";
 import { NavRail } from "./components/NavRail";
-import { Section } from "./components/Stepper";
 import { StatusBar } from "./components/StatusBar";
 import { TabPanel } from "./components/TabPanel";
 import { TargetsPanel } from "./components/TargetsPanel";
 import { TourCard } from "./components/TourCard";
-import { TrainControls } from "./components/TrainControls";
 import { TrainingPanel } from "./components/TrainingPanel";
 import { ViewerPanels } from "./components/ViewerPanels";
 import { useEncodeConfig } from "./hooks/useEncodeConfig";
@@ -134,8 +131,6 @@ export default function App() {
         active={tabs.active}
         loaded={training.state.loaded}
         dataset={config.dataset}
-        coding={config.coding}
-        device={training.state.config.device}
         tourOpen={tour.menuOpen}
         onToggleTours={tour.toggleMenu}
         onOpenTour={tour.openLesson}
@@ -143,52 +138,33 @@ export default function App() {
 
       <main className="app-main">
         <TabPanel id="model" active={tabs.active}>
-          <div className="tab-cols tab-cols-model">
-            <div className="tab-col">
-              <ModelPanel
-                models={training.state.models}
-                current={training.state.loaded?.name ?? null}
-                connected={ws.connected}
-                busy={training.state.running}
-                loading={viewer.modelLoading}
-                readOnly={readOnly}
-                onNew={actions.newModel}
-                onLoad={actions.loadModel}
-                onSave={actions.saveModel}
-              />
-
-              <div className="panel">
-                <Section
-                  title={t("section.train")}
-                  hint={t("section.train.hint")}
-                >
-                  <TrainControls
-                    running={training.state.running}
-                    connected={ws.connected}
-                    readOnly={readOnly}
-                    onTrain={actions.train}
-                    onStop={actions.stopTrain}
-                  />
-                </Section>
-              </div>
-            </div>
-
-            <div className="tab-col">
-              <Controls
-                config={config}
-                model={training.state.config}
-                datasets={training.state.datasets}
-                gpuAvailable={viewer.gpuAvailable}
-                topologies={training.state.topologies}
-                neurons={training.state.neurons}
-                surrogates={training.state.surrogates}
-                locked={viewer.locked}
-                onChange={patchConfig}
-                onModelChange={training.patch}
-                onSelectSample={actions.selectSample}
-              />
-            </div>
-          </div>
+          <ModelWorkspace
+            config={config}
+            model={training.state.config}
+            datasets={training.state.datasets}
+            models={training.state.models}
+            currentModel={training.state.loaded?.name ?? null}
+            loaded={training.state.loaded}
+            sample={viewer.state.sample}
+            eventFrame={viewer.state.eventFrame}
+            topologies={training.state.topologies}
+            neurons={training.state.neurons}
+            surrogates={training.state.surrogates}
+            gpuAvailable={viewer.gpuAvailable}
+            connected={ws.connected}
+            busy={training.state.running}
+            loading={viewer.modelLoading}
+            readOnly={readOnly}
+            locked={viewer.locked}
+            onPatchConfig={patchConfig}
+            onModelChange={training.patch}
+            onSelectSample={actions.selectSample}
+            onNew={actions.newModel}
+            onLoad={actions.loadModel}
+            onSave={actions.saveModel}
+            onTrain={actions.train}
+            onStopTrain={actions.stopTrain}
+          />
         </TabPanel>
 
         <TabPanel id="viewer" active={tabs.active}>

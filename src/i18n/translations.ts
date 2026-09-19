@@ -130,6 +130,32 @@ export const EN = {
   "energy.empty":
     "No energy estimate yet. Press Estimate to account the configured " +
     "topology's event-driven operations for the selected target.",
+  // --- docked panes ------------------------------------------------------
+  "pane.data": "Data & Encoding",
+  "pane.network": "Network",
+  // --- dataset metadata and the input preview ----------------------------
+  "dataset.modality": "Modality",
+  "dataset.availability": "Availability",
+  "dataset.available": "available",
+  "modality.image": "image",
+  "modality.event": "event",
+  "preview.sample": "Sample",
+  // --- architecture strip ------------------------------------------------
+  "arch.title": "Architecture",
+  "arch.input": "Input",
+  "arch.encoder": "Encoder",
+  "arch.hidden": "Hidden",
+  "arch.output": "Output",
+  "arch.neurons": "neurons",
+  "arch.classes": "classes",
+  "arch.device": "Device",
+  "arch.gpuAvailable": "GPU available",
+  "arch.gpuUnavailable": "GPU unavailable",
+  // --- loaded checkpoint summary -----------------------------------------
+  "loaded.accuracy": "accuracy",
+  "loaded.input": "input",
+  "loaded.hidden": "hidden",
+  "loaded.device": "device",
 } as const;
 
 export type TranslationKey = keyof typeof EN;

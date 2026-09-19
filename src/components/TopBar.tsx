@@ -1,10 +1,5 @@
-import { Moon, Sun } from "lucide-react";
-
 import { LESSONS } from "../tour/lessons";
-import { useTheme } from "../theme";
-import { useI18n } from "../i18n/I18nProvider";
 import type { ExecutionMode } from "../types";
-import { IconButton } from "./IconButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { ModeToggle } from "./ModeToggle";
 import { SessionContext } from "./SessionContext";
@@ -14,8 +9,8 @@ import { TourLauncher } from "./TourLauncher";
 interface Props {
   mode: ExecutionMode;
   onModeChange: (mode: ExecutionMode) => void;
-  /** Label of the active section, shown beside the wordmark. */
-  section: string;
+  /** Name of the active workspace, shown as the toolbar breadcrumb. */
+  workspace: string;
   /** Facts already held in App state; unknown values render nothing. */
   session: SessionFacts;
   tourOpen: boolean;
@@ -24,21 +19,22 @@ interface Props {
 }
 
 /**
- * Product header: wordmark and active section on the left, quiet session
- * context next, and the global utilities on the right in descending visual
- * weight (execution mode, tours, language, theme).
+ * Product header: the identity and the active workspace on the left, the two
+ * session facts next, and the global controls on the right in descending
+ * visual weight (execution mode, tours, language).
+ *
+ * The theme control lives at the foot of the navigation rail with the rest of
+ * the shell's own settings, so the toolbar holds only what changes per task.
  */
 export function TopBar({
   mode,
   onModeChange,
-  section,
+  workspace,
   session,
   tourOpen,
   onToggleTours,
   onOpenTour,
 }: Props) {
-  const { theme, toggle } = useTheme();
-  const { t } = useI18n();
   return (
     <header className="topbar">
       <div className="topbar-product">
@@ -51,7 +47,7 @@ export function TopBar({
         <span className="topbar-sep" aria-hidden="true">
           /
         </span>
-        <span className="brand-section">{section}</span>
+        <span className="topbar-workspace">{workspace}</span>
       </div>
 
       <SessionContext facts={session} />
@@ -65,12 +61,6 @@ export function TopBar({
           onOpen={onOpenTour}
         />
         <LanguageSelect />
-        <IconButton
-          icon={theme === "dark" ? Sun : Moon}
-          label={t("theme.toggle")}
-          title={theme === "dark" ? t("theme.light") : t("theme.dark")}
-          onClick={toggle}
-        />
       </div>
     </header>
   );

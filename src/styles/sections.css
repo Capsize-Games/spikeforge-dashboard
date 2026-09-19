@@ -234,11 +234,22 @@ canvas {
   color: var(--muted);
 }
 
-/* The help mark is part of the row but after the control, so every row's
-   question mark lines up on the same right edge. */
+/* The help mark is a trailing button of the group: it fills the row's height
+   and shares the label cell's surface, with a seam dividing it from the
+   control. Every row's question mark therefore lines up on one right edge. */
 .field > .help-tip {
-  align-self: center;
-  margin: 0 10px 0 4px;
+  align-self: stretch;
+  width: 30px;
+  height: auto;
+  border: none;
+  border-left: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: var(--surface-2);
+}
+
+.field > .help-tip:hover,
+.field > .help-tip:focus {
+  background: var(--surface-3);
 }
 
 .field:focus-within {

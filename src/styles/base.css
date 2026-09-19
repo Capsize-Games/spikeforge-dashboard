@@ -254,14 +254,6 @@ body {
   color: var(--bad);
 }
 
-/* The product mark, now carried by the navigation rail rather than the
-   toolbar. */
-.brand-mark {
-  color: var(--accent);
-  font-size: 15px;
-  line-height: 1;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;

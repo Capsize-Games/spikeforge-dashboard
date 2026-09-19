@@ -3,6 +3,7 @@ import type { KeyboardEvent } from "react";
 import {
   Activity,
   Boxes,
+  BrainCircuit,
   ChartLine,
   Library,
   Moon,
@@ -96,7 +97,7 @@ export function NavRail({ tabs, active, busy = {}, onSelect }: Props) {
       {/* The product mark occupies the header's own height, so the navigation
           rows begin level with the workspace below the toolbar. */}
       <div className="nav-rail-mark" aria-hidden="true">
-        <span className="brand-mark">◈</span>
+        <BrainCircuit size={28} strokeWidth={1.5} />
       </div>
 
       <div

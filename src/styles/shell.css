@@ -32,15 +32,12 @@
   align-items: center;
   justify-content: center;
   height: 52px;
+  color: var(--accent);
 }
 
 .nav-rail.expanded .nav-rail-mark {
   justify-content: flex-start;
-  padding: 0 17px;
-}
-
-.nav-rail-mark .brand-mark {
-  font-size: 18px;
+  padding: 0 13px;
 }
 
 .nav-rail-list {

@@ -29,6 +29,39 @@ for distribution in (
 
 datas += collect_data_files("spikeforge_hub")
 
+# PyInstaller records each distribution's metadata licence tree under
+# ``<name>.dist-info/licenses/...``, and numpy's is nested several levels deep
+# (``licenses/numpy/linalg/lapack_lite/LICENSE.txt``). butler compares the new
+# Windows archive against the build already on the itch.io channel and fails
+# the patch with ``lstat ...numpy/linalg: not a directory``, so the Windows
+# channel never updates however many releases are cut.
+#
+# Moving every licence tree to a new top-level directory keeps all of the
+# licence text in the bundle — the BSD notices have to ship — while removing
+# the paths butler conflicts on. The distributions' METADATA and RECORD stay
+# where ``importlib.metadata`` expects them.
+_LICENCE_MARKER = ".dist-info/licenses/"
+
+
+def relocate_licences(entries):
+    """Re-root metadata licence trees under ``third_party_licenses``."""
+    relocated = []
+    for source, destination in entries:
+        text = str(destination).replace("\\", "/")
+        marker = text.find(_LICENCE_MARKER)
+        if marker < 0:
+            relocated.append((source, destination))
+            continue
+        distribution = text[:marker].rsplit("/", 1)[-1]
+        tail = text[marker + len(_LICENCE_MARKER) :]
+        relocated.append(
+            (source, f"third_party_licenses/{distribution}/{tail}")
+        )
+    return relocated
+
+
+datas = relocate_licences(datas)
+
 hiddenimports = (
     collect_submodules("server")
     + collect_submodules("spikeforge")

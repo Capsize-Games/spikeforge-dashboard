@@ -140,13 +140,14 @@
 }
 
 /* A numeric box is a value, not a form: it sits one surface step above the
-   pane, keeps no border, and right-aligns so magnitudes line up. It carries
-   normal interface text — one rank above the label that names it.
-   It fills its control column like every other control; beside a slider it
-   keeps a fixed width so the track has the rest. */
+   pane, keeps no border, and right-aligns so magnitudes line up. It is
+   compact and pushed to the right of its row, so the numbers form a column
+   at the pane's right edge rather than a run of empty boxes. Beside a slider
+   it is narrower still, leaving the track the rest of the row. */
 .num-input {
-  width: 100%;
-  min-width: 0;
+  flex: 0 0 auto;
+  width: 96px;
+  margin-left: auto;
   height: var(--control-h);
   padding: 0 8px;
   border: none;
@@ -161,8 +162,8 @@
 }
 
 .field-scale .num-input {
-  flex: 0 0 auto;
   width: 72px;
+  margin-left: 0;
 }
 
 .num-input.invalid {

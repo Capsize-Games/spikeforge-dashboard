@@ -188,38 +188,22 @@
 }
 
 /* --- per-stage neuron override editor --- */
-/* The editor is a control, so it starts where the control column starts:
-   indented past the label column, the stage names acting as its own labels. */
+/* Ordinary field rows, so the overrides share the form's label and control
+   columns rather than forming a second, differently-aligned grid. */
 .stage-neurons {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-left: calc(var(--field-label-w) + 12px);
+  gap: 12px;
 }
 
-.stage-row,
-.stage-add {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.stage-row-name {
-  flex: 0 0 64px;
+.stage-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--fs-secondary);
-  color: var(--muted);
 }
 
-.stage-row select,
-.stage-add .text-input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* A button in a row takes its own width; `.apply` is full-width in a column. */
+/* The trailing button takes its own width; `.apply` is full-width in a
+   column, and neither it nor the remove button should grow the row. */
 .stage-row .icon-btn,
 .stage-add .apply.small {
   flex: 0 0 auto;

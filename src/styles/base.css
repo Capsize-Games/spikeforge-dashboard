@@ -77,7 +77,7 @@
   --radius: 4px;
   /* Form label column: wide enough for the longest parameter name, narrow
      enough to leave the control column most of a 380px inspector pane. */
-  --field-label-w: 132px;
+  --field-label-w: 120px;
 
   /* --- depth --- */
   --overlay: rgba(5, 7, 12, 0.82);
@@ -117,7 +117,7 @@
   --line-soft: rgba(31, 35, 40, 0.08);
   --line: rgba(31, 35, 40, 0.16);
   /* Geometry token, not a colour: restated only because every token is. */
-  --field-label-w: 132px;
+  --field-label-w: 120px;
 
   --ambient:
     radial-gradient(

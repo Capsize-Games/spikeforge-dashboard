@@ -1,7 +1,5 @@
-import { TRAIN_HELP } from "../helpText";
 import { useStageNeurons } from "../hooks/useStageNeurons";
 import type { StageNeurons } from "../types";
-import { HelpTip } from "./HelpTip";
 
 interface Props {
   /** Per-stage neuron-kind overrides keyed by stage name. */
@@ -12,7 +10,13 @@ interface Props {
   onChange: (value: StageNeurons) => void;
 }
 
-/** Per-stage neuron-kind overrides for the topology panel. */
+/**
+ * Per-stage neuron-kind overrides for the topology panel.
+ *
+ * Each row is an ordinary field row — the stage name in the label column, the
+ * picker in the control column — so the overrides line up with every other
+ * setting instead of forming a separate, differently-aligned table.
+ */
 export function StageNeuronEditor({
   value,
   neurons,
@@ -35,9 +39,9 @@ export function StageNeuronEditor({
   return (
     <div className="stage-neurons">
       {Object.entries(value).map(([stage, kind]) => (
-        <div className="stage-row" key={stage}>
-          <span className="stage-row-name" title={stage}>
-            {stage}
+        <div className="field stage-row" key={stage}>
+          <span className="field-label" title={stage}>
+            <span className="stage-name">{stage}</span>
           </span>
           <select
             className="text-input"
@@ -65,10 +69,11 @@ export function StageNeuronEditor({
         </div>
       ))}
 
-      <div className="stage-add">
+      <div className="field stage-add">
+        <span className="field-label" aria-hidden="true" />
         <input
           className="text-input"
-          placeholder="stage name, e.g. lif1"
+          placeholder="e.g. lif1"
           aria-label="Stage name to override"
           value={draft}
           disabled={disabled}
@@ -85,7 +90,6 @@ export function StageNeuronEditor({
         >
           Add stage
         </button>
-        <HelpTip text={TRAIN_HELP.stage_neurons} />
       </div>
     </div>
   );

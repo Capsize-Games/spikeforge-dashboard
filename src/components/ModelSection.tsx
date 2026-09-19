@@ -1,6 +1,7 @@
 import { TRAIN_HELP } from "../helpText";
 import { useI18n } from "../i18n/I18nProvider";
 import type { TopologyParams, TrainConfig } from "../types";
+import { HelpTip } from "./HelpTip";
 import { SelectField } from "./SelectField";
 import { NumberField } from "./NumberField";
 import { StageNeuronEditor } from "./StageNeuronEditor";
@@ -110,7 +111,10 @@ export function ModelSection({
           set({ topology_params: withParam(params, "surrogate", v || null) })
         }
       />
-      <p className="panel-note">{t("model.stageOverrides")}</p>
+      <p className="panel-note">
+        {t("model.stageOverrides")}
+        <HelpTip text={TRAIN_HELP.stage_neurons} />
+      </p>
       <StageNeuronEditor
         value={model.stage_neurons}
         neurons={neurons}

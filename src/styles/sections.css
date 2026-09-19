@@ -37,7 +37,7 @@
 .section-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 2px 0 16px;
 }
 
@@ -216,29 +216,26 @@ canvas {
 }
 
 /*
- * A form field is one row of two columns: the label (with its help tip) in a
- * fixed column, the control in the column beside it. Because both columns are
- * fixed, every label lines up down the pane and every control shares one left
- * and one right edge — which is what makes a form read as a form rather than
- * a stack of unrelated boxes.
- *
- * Vertical rhythm is owned by the container (see .section-body / .pane-body),
- * so a field carries no margin of its own.
+ * A form field is one row: a fixed label column and the control beside it.
+ * The label keeps its help tip immediately after the text — never pushed to
+ * the far edge, where it floats away from the word it explains — and the
+ * control starts at one shared left edge. Vertical rhythm is owned by the
+ * container (see .section-body / .pane-body), so a field carries no margin.
  */
 .field {
-  display: grid;
-  grid-template-columns: var(--field-label-w) minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: 12px;
+  gap: 12px;
   font-size: var(--fs-label);
   color: var(--muted);
 }
 
 .field-label {
+  flex: 0 0 var(--field-label-w);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -248,10 +245,13 @@ canvas {
   font-variant-numeric: tabular-nums;
 }
 
-/* Every control fills the control column, so their edges line up. */
+/* Pickers and text entries take the rest of the row; their right edges line
+   up because the label column is fixed. A numeric box is compact instead
+   (see primitives.css) and right-aligns inside the same column. */
 .field select,
 .field .text-input {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .field input[type="range"] {
@@ -259,10 +259,9 @@ canvas {
   accent-color: var(--accent);
 }
 
-/* A checkbox is its own label, so it spans the whole row instead of sitting
-   in a control column that would be empty. */
-.field.check {
-  grid-template-columns: minmax(0, 1fr);
+/* A checkbox is its own label, so it takes the whole row. */
+.field.check .field-label {
+  flex: 1 1 auto;
 }
 
 /* --- measured line charts --- */

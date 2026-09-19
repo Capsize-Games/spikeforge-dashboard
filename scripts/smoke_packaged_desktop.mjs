@@ -30,6 +30,26 @@ const EXECUTABLES = [
 
 const START_TIMEOUT_MS = 300_000;
 
+/**
+ * Variables that make the Electron binary behave as plain Node.
+ *
+ * A VS Code integrated terminal exports `ELECTRON_RUN_AS_NODE=1` for its own
+ * child processes, and a CI runner started from one inherits it. The packaged
+ * binary then reads Electron's own switches as Node options, exits before the
+ * first window, and Playwright reports only "Process failed to launch!". The
+ * Electron suite strips the same variables in `tests/e2e/support/electron.ts`.
+ */
+const NODE_MODE_VARS = ["ELECTRON_RUN_AS_NODE", "ELECTRON_NO_ATTACH_CONSOLE"];
+
+/** The parent environment with the Node-mode switches removed. */
+function desktopEnv() {
+  const env = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined && !NODE_MODE_VARS.includes(key)) env[key] = value;
+  }
+  return env;
+}
+
 function parseArgs(argv) {
   const args = { app: null, exe: null };
   for (let i = 0; i < argv.length; i += 1) {
@@ -87,6 +107,7 @@ async function main() {
   const app = await _electron.launch({
     executablePath: executable,
     args: [`--user-data-dir=${profile}`],
+    env: desktopEnv(),
     timeout: 120_000,
   });
 

@@ -39,17 +39,32 @@
   min-height: 0;
 }
 
+/* Training & Analysis: the training stack fills the tab's height so its
+   charts grow into the space, while the shorter analysis stack tiles into a
+   grid beside it (see .analysis-grid). */
+.tab-cols-training {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tab-cols-training .tab-col {
+  min-height: 0;
+}
+
+/* Energy & Deployment: the target list and report need more room than the
+   energy readout beside them. */
+.tab-cols-deploy {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+
 .tab-col {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
   min-height: 0;
-}
-
-/* Cap single-panel tabs (hub) so search and lists don't stretch forever. */
-.tab-col.narrow {
-  max-width: 960px;
 }
 
 @media (max-width: 900px) {

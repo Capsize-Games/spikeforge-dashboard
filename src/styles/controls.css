@@ -54,6 +54,7 @@
 /* Inputs are a raised surface, not a boxed field: no border, one surface
    step above the panel they sit on. */
 .field select {
+  width: 100%;
   height: var(--control-h);
   padding: 0 6px;
   background: var(--surface-3);
@@ -156,12 +157,72 @@
   font-style: italic;
 }
 
-/* The data and encoding editor is one column inside its pane: the fields
-   stack, the pane body owns the spacing, and nothing tries to balance
-   itself into a second column. */
+/* The data and encoding editor stacks by default and tiles into two columns
+   once the pane is wide enough, so a wide window gets two readable columns
+   instead of one run of full-width controls. */
 .controls {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+
+.controls-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* The sample is a fixed-size instrument reading, not a surface that stretches
+   to whatever width the pane happens to be. */
+.sample-preview {
+  max-width: 260px;
+}
+
+/* --- per-stage neuron override editor --- */
+/* The editor is a control, so it starts where the control column starts:
+   indented past the label column, the stage names acting as its own labels. */
+.stage-neurons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: calc(var(--field-label-w) + 12px);
+}
+
+.stage-row,
+.stage-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-row-name {
+  flex: 0 0 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-secondary);
+  color: var(--muted);
+}
+
+.stage-row select,
+.stage-add .text-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* A button in a row takes its own width; `.apply` is full-width in a column. */
+.stage-row .icon-btn,
+.stage-add .apply.small {
+  flex: 0 0 auto;
+  width: auto;
+  margin-top: 0;
 }

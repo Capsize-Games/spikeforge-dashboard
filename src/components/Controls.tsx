@@ -26,6 +26,11 @@ interface Props {
  * The data and encoding editor: the pane between the asset browser and the
  * network inspector.
  *
+ * The content tiles into two columns once the pane is wide enough — dataset
+ * and its sample on the left, encoding on the right — so a wide window gets
+ * two readable columns instead of one run of full-width controls. Below that
+ * width it is one column again.
+ *
  * It answers three questions in the order they are asked — which dataset, what
  * the application knows about it (including a look at the frame itself), and
  * how that frame is turned into spikes. The notes at the top are the
@@ -50,68 +55,74 @@ export function Controls({
     <div className="controls">
       {locked && <div className="lock-note">{t("controls.locked")}</div>}
 
-      <Section
-        title={t("section.data")}
-        hint={
-          eventMode
-            ? t("section.data.eventHint")
-            : t("section.data.imageHint")
-        }
-      >
-        <SelectField
-          label={t("field.dataset")}
-          value={config.dataset}
-          help={HELP.dataset}
-          tour="dataset"
-          disabled={locked}
-          options={datasetOptions(datasets, config.dataset, t)}
-          onChange={(v) => onSelectSample({ dataset: v, sample_index: 0 })}
-        />
+      <div className="controls-grid">
+        <div className="controls-col">
+          <Section
+            title={t("section.data")}
+            hint={
+              eventMode
+                ? t("section.data.eventHint")
+                : t("section.data.imageHint")
+            }
+          >
+            <SelectField
+              label={t("field.dataset")}
+              value={config.dataset}
+              help={HELP.dataset}
+              tour="dataset"
+              disabled={locked}
+              options={datasetOptions(datasets, config.dataset, t)}
+              onChange={(v) => onSelectSample({ dataset: v, sample_index: 0 })}
+            />
 
-        {eventUnavailable && (
-          <p className="modality-note warn">{HELP.event_availability}</p>
-        )}
+            {eventUnavailable && (
+              <p className="modality-note warn">{HELP.event_availability}</p>
+            )}
 
-        {eventMode && !eventUnavailable && (
-          <p className="modality-note">{HELP.event_training}</p>
-        )}
+            {eventMode && !eventUnavailable && (
+              <p className="modality-note">{HELP.event_training}</p>
+            )}
 
-        <FactGrid facts={datasetFacts(selected, t)} />
+            <FactGrid facts={datasetFacts(selected, t)} />
 
-        <NumberField
-          label="subset"
-          value={config.subset}
-          min={1}
-          max={50}
-          step={1}
-          help={HELP.subset}
-          disabled={locked}
-          onChange={(v) => onChange({ subset: v })}
-        />
-        <NumberField
-          label="batch_size"
-          value={config.batch_size}
-          min={8}
-          max={512}
-          step={8}
-          help={HELP.batch_size}
-          disabled={locked}
-          onChange={(v) => onChange({ batch_size: v })}
-        />
-      </Section>
+            <NumberField
+              label="subset"
+              value={config.subset}
+              min={1}
+              max={50}
+              step={1}
+              help={HELP.subset}
+              disabled={locked}
+              onChange={(v) => onChange({ subset: v })}
+            />
+            <NumberField
+              label="batch_size"
+              value={config.batch_size}
+              min={8}
+              max={512}
+              step={8}
+              help={HELP.batch_size}
+              disabled={locked}
+              onChange={(v) => onChange({ batch_size: v })}
+            />
+          </Section>
 
-      <SamplePreview
-        sample={sample}
-        eventFrame={eventFrame}
-        event={eventMode}
-      />
+          <SamplePreview
+            sample={sample}
+            eventFrame={eventFrame}
+            event={eventMode}
+          />
+        </div>
 
-      <EncodingControls
-        config={config}
-        locked={locked}
-        eventMode={eventMode}
-        onChange={onChange}
-      />
+        <div className="controls-col">
+          <EncodingControls
+            config={config}
+            locked={locked}
+            eventMode={eventMode}
+            onChange={onChange}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -95,12 +95,6 @@
   padding: 12px;
 }
 
-/* Inside a pane the body owns the spacing, so a field does not also add its
-   own bottom margin on top of it. */
-.pane-body .field {
-  margin-bottom: 0;
-}
-
 /* --- section micro-heading ------------------------------------------- */
 
 /* A grouping label inside a pane. Sentence case, 11px, semibold: it is a

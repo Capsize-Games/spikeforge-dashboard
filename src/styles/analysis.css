@@ -73,3 +73,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* The analysis stack tiles into as many columns as fit, so the Training tab
+   uses its width instead of stacking four short panels down one column. */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  align-content: start;
+}

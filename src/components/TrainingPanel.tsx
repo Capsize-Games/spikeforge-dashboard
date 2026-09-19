@@ -21,7 +21,7 @@ export function TrainingPanel({
 }: Props) {
   const { t } = useI18n();
   return (
-    <div className="panel">
+    <div className="panel training-panel">
       <PanelHeader title={t("training.title")} />
 
       <PanelHeader title={t("training.status")} subsection />

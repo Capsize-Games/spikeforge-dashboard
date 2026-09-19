@@ -1,9 +1,9 @@
 /* --- Phase 5c deployment targets panel --- */
 
 .targets-panel .target-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4px;
   margin: 0 0 8px;
   padding: 0;
   list-style: none;

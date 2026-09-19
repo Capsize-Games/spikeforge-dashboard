@@ -141,10 +141,12 @@
 
 /* A numeric box is a value, not a form: it sits one surface step above the
    pane, keeps no border, and right-aligns so magnitudes line up. It carries
-   normal interface text — one rank above the label that names it. */
+   normal interface text — one rank above the label that names it.
+   It fills its control column like every other control; beside a slider it
+   keeps a fixed width so the track has the rest. */
 .num-input {
-  flex: 0 0 auto;
-  width: 96px;
+  width: 100%;
+  min-width: 0;
   height: var(--control-h);
   padding: 0 8px;
   border: none;
@@ -159,6 +161,7 @@
 }
 
 .field-scale .num-input {
+  flex: 0 0 auto;
   width: 72px;
 }
 

@@ -31,7 +31,13 @@
   color: var(--muted);
 }
 
+/* The body owns the vertical rhythm: every direct child — field, fact grid,
+   note, sub-editor — is spaced by the same gap instead of each carrying its
+   own margin. */
 .section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 2px 0 16px;
 }
 
@@ -209,12 +215,22 @@ canvas {
   background: var(--canvas-bg);
 }
 
+/*
+ * A form field is one row of two columns: the label (with its help tip) in a
+ * fixed column, the control in the column beside it. Because both columns are
+ * fixed, every label lines up down the pane and every control shares one left
+ * and one right edge — which is what makes a form read as a form rather than
+ * a stack of unrelated boxes.
+ *
+ * Vertical rhythm is owned by the container (see .section-body / .pane-body),
+ * so a field carries no margin of its own.
+ */
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: var(--field-label-w) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
   font-size: var(--fs-label);
-  margin-bottom: 10px;
   color: var(--muted);
 }
 
@@ -223,6 +239,7 @@ canvas {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-width: 0;
 }
 
 .field b {
@@ -231,7 +248,47 @@ canvas {
   font-variant-numeric: tabular-nums;
 }
 
+/* Every control fills the control column, so their edges line up. */
+.field select,
+.field .text-input {
+  width: 100%;
+}
+
 .field input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
+}
+
+/* A checkbox is its own label, so it spans the whole row instead of sitting
+   in a control column that would be empty. */
+.field.check {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* --- measured line charts --- */
+/* LineChart draws at the container's real size, so the plot fills its column
+   with crisp gridlines and legend instead of a stretched fixed buffer. */
+.chart-fill {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-fill canvas.chart-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The training stack fills the tab's height: its two charts share whatever
+   room the status grid and subsection headings leave. */
+.training-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.training-panel .chart-fill {
+  flex: 1 1 0;
+  min-height: 120px;
 }

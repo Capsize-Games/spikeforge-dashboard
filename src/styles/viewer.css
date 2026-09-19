@@ -12,6 +12,10 @@
   gap: 12px;
   flex: 1 1 auto;
   min-height: 0;
+  /* The workspace is one screen. The stage sizes itself to the row, the
+     inspector scrolls inside its own column, and nothing here grows the tab
+     into a page scrollbar. */
+  overflow: hidden;
 }
 
 .viewer-stage {
@@ -45,6 +49,9 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto;
     flex: 0 1 auto;
+    /* Stacked, the workspace is taller than the window again, so it has to
+       scroll through the tab rather than clip. */
+    overflow: visible;
   }
 
   .viewer-stage,
@@ -116,9 +123,11 @@
   min-width: 0;
 }
 
-/* Cap the square sample heatmaps so the row can't grow with column width. */
+/* Cap the square sample heatmaps so the row can't grow with column width.
+   Kept small enough that the stage (input + three rasters) still fits one
+   screen, which is what keeps the viewer free of a page scrollbar. */
 .viz-row .pair.grow {
-  max-width: 380px;
+  max-width: 320px;
   margin: 0 auto;
 }
 
@@ -178,7 +187,7 @@
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
-  min-height: 70px;
+  min-height: 56px;
 }
 
 .raster-row-head {

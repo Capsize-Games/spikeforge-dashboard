@@ -207,7 +207,7 @@ export default function App() {
         </TabPanel>
 
         <TabPanel id="training" active={tabs.active}>
-          <div className="tab-cols">
+          <div className="tab-cols tab-cols-training">
             <div className="tab-col">
               <TrainingPanel
                 loss={training.state.loss}
@@ -239,13 +239,13 @@ export default function App() {
         </TabPanel>
 
         <TabPanel id="hub" active={tabs.active}>
-          <div className="tab-col narrow">
+          <div className="tab-col hub-col">
             <HubPanel hub={hub} />
           </div>
         </TabPanel>
 
         <TabPanel id="deploy" active={tabs.active}>
-          <div className="tab-cols">
+          <div className="tab-cols tab-cols-deploy">
             <div className="tab-col">
               <TargetsPanel
                 list={viewer.state.targetList}

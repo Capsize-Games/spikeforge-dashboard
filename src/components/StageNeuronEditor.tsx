@@ -1,5 +1,7 @@
+import { TRAIN_HELP } from "../helpText";
 import { useStageNeurons } from "../hooks/useStageNeurons";
 import type { StageNeurons } from "../types";
+import { HelpTip } from "./HelpTip";
 
 interface Props {
   /** Per-stage neuron-kind overrides keyed by stage name. */
@@ -33,12 +35,15 @@ export function StageNeuronEditor({
   return (
     <div className="stage-neurons">
       {Object.entries(value).map(([stage, kind]) => (
-        <div className="model-row" key={stage}>
-          <span className="muted">{stage}</span>
+        <div className="stage-row" key={stage}>
+          <span className="stage-row-name" title={stage}>
+            {stage}
+          </span>
           <select
             className="text-input"
             value={kind}
             disabled={disabled}
+            aria-label={`Neuron for ${stage}`}
             onChange={(e) => onChange({ ...value, [stage]: e.target.value })}
           >
             {kinds(kind).map((name) => (
@@ -49,21 +54,28 @@ export function StageNeuronEditor({
           </select>
           <button
             type="button"
-            className="apply small"
+            className="icon-btn"
             disabled={disabled}
+            title={`Remove ${stage} override`}
+            aria-label={`Remove ${stage} override`}
             onClick={() => remove(stage)}
           >
             ✕
           </button>
         </div>
       ))}
-      <div className="model-row">
+
+      <div className="stage-add">
         <input
           className="text-input"
-          placeholder="stage name (e.g. lif1)"
+          placeholder="stage name, e.g. lif1"
+          aria-label="Stage name to override"
           value={draft}
           disabled={disabled}
           onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+          }}
         />
         <button
           type="button"
@@ -73,6 +85,7 @@ export function StageNeuronEditor({
         >
           Add stage
         </button>
+        <HelpTip text={TRAIN_HELP.stage_neurons} />
       </div>
     </div>
   );

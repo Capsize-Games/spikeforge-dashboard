@@ -120,6 +120,8 @@ export const DE: TranslationSet = {
     "Noch keine Energieschätzung. Mit Schätzen das gewählte Ziel berechnen.",
   "pane.data": "Daten & Codierung",
   "pane.network": "Netzwerk",
+  "pane.collapse": "Bereich einklappen",
+  "pane.expand": "Bereich ausklappen",
   "dataset.modality": "Modalität",
   "dataset.availability": "Verfügbarkeit",
   "dataset.available": "verfügbar",

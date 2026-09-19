@@ -61,6 +61,36 @@ test.describe("panels", () => {
     expect(Math.round(left.height)).toBe(Math.round(workspace?.height ?? 0));
   });
 
+  /**
+   * On a narrower desktop the asset browser gives way first: between the two
+   * collapse widths it is a 42px strip while the inspector still has its full
+   * width, and the editor never collapses at all. The collapse is reversible
+   * by hand and hides the body rather than unmounting it, so the checkpoint
+   * list survives.
+   */
+  test("asset browser collapses first and expands again", async ({
+    dashboard,
+  }) => {
+    // Below the asset browser's collapse width, above the inspector's.
+    await dashboard.page.setViewportSize({ width: 1100, height: 800 });
+    // The starting state is read from the viewport at first paint.
+    await dashboard.page.reload();
+    const panel = await dashboard.tab("model");
+
+    const assets = panel.locator(".dock-pane--assets");
+    const toggle = assets.locator(".pane-toggle");
+    await expect(assets).toHaveClass(/collapsed/);
+    await expect(assets.locator(".pane-body")).toBeHidden();
+    await expect(panel.locator(".dock-pane--inspector")).not.toHaveClass(
+      /collapsed/,
+    );
+
+    await toggle.click();
+    await expect(assets).not.toHaveClass(/collapsed/);
+    await expect(assets.locator(".pane-body")).toBeVisible();
+    await expect(dashboard.modelPanel).toBeVisible();
+  });
+
   test("viewer tab shows the input, prediction, and trajectory panels", async ({
     dashboard,
   }) => {

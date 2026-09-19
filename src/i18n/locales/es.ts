@@ -122,6 +122,8 @@ export const ES: TranslationSet = {
     "Aún no hay cálculo energético. Pulsa Estimar para analizar el destino seleccionado.",
   "pane.data": "Datos y codificación",
   "pane.network": "Red",
+  "pane.collapse": "Contraer panel",
+  "pane.expand": "Expandir panel",
   "dataset.modality": "Modalidad",
   "dataset.availability": "Disponibilidad",
   "dataset.available": "disponible",

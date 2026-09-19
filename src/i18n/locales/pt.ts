@@ -63,6 +63,8 @@ export const PT: TranslationSet = {
   "training.accuracy": "Precisão (%)",
   "pane.data": "Dados e codificação",
   "pane.network": "Rede",
+  "pane.collapse": "Recolher painel",
+  "pane.expand": "Expandir painel",
   "dataset.modality": "Modalidade",
   "dataset.availability": "Disponibilidade",
   "dataset.available": "disponível",

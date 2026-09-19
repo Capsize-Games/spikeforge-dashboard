@@ -119,6 +119,8 @@ export const JA: TranslationSet = {
     "エネルギー推定はまだありません。推定を押して選択したターゲットを計算します。",
   "pane.data": "データとエンコーディング",
   "pane.network": "ネットワーク",
+  "pane.collapse": "ペインを折りたたむ",
+  "pane.expand": "ペインを展開する",
   "dataset.modality": "モダリティ",
   "dataset.availability": "利用可否",
   "dataset.available": "利用可",

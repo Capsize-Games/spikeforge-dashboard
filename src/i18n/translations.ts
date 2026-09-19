@@ -133,6 +133,8 @@ export const EN = {
   // --- docked panes ------------------------------------------------------
   "pane.data": "Data & Encoding",
   "pane.network": "Network",
+  "pane.collapse": "Collapse pane",
+  "pane.expand": "Expand pane",
   // --- dataset metadata and the input preview ----------------------------
   "dataset.modality": "Modality",
   "dataset.availability": "Availability",

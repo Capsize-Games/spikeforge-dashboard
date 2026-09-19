@@ -115,40 +115,66 @@
   color: var(--muted);
 }
 
-/* --- narrow desktops: narrower panes, then a stacked workspace -------- */
+/* --- narrow desktops: narrower, then collapsed, then stacked ---------- */
 
-/* The panes give up width in the same order they matter: the asset
-   browser first, then the inspector. An editor never collapses, because it
-   is where the work is. */
-@media (max-width: 1360px) {
-  .dock-pane--assets {
-    flex-basis: 224px;
-    width: 224px;
-  }
-
-  .dock-pane--inspector {
-    flex-basis: 320px;
-    width: 320px;
-  }
+/* `.collapsed` is the pane's own toggle state (see DockPane.tsx), set from
+   the viewport at first paint and overridable by hand at any width. */
+.dock-pane.collapsed {
+  flex: 0 0 42px;
+  width: 42px;
 }
 
-@media (max-width: 1180px) {
-  .dock-pane--assets {
-    flex-basis: 200px;
-    width: 200px;
+/* A collapsed pane is a labelled strip: the heading runs down the pane so the
+   strip is still identifiable, and the toggle sits at the bottom of it. */
+.dock-pane.collapsed .pane-head {
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 0;
+  padding: 10px 0;
+  border-bottom: none;
+}
+
+.dock-pane.collapsed .pane-title {
+  writing-mode: vertical-rl;
+}
+
+.dock-pane.collapsed .pane-toggle {
+  margin-top: auto;
+  margin-left: 0;
+}
+
+.dock-pane.collapsed .pane-head-meta {
+  display: none;
+}
+
+/* Hidden, not unmounted: what is inside a collapsed pane keeps its state and
+   stays mounted while the section is on screen. */
+.dock-pane.collapsed .pane-body {
+  display: none;
+}
+
+/* Before either pane collapses, they give up width in the same order they
+   matter — the asset browser first, then the inspector. */
+@media (max-width: 1360px) {
+  .dock-pane--assets:not(.collapsed) {
+    flex-basis: 236px;
+    width: 236px;
   }
 
-  .dock-pane--inspector {
-    flex-basis: 300px;
-    width: 300px;
+  .dock-pane--inspector:not(.collapsed) {
+    flex-basis: 340px;
+    width: 340px;
   }
 }
 
 /* Last: stack. The pane heading and the hairline survive, the dock turns into
    a column and grows to the height of the three panes stacked, and the
    workspace region scrolls (see .tab-panel in tabs.css) — a stacked pane has
-   no second axis left to scroll on. */
-@media (max-width: 1100px) {
+   no second axis left to scroll on. Collapse is meaningless once a pane is
+   full width, so every pane is open here. */
+@media (max-width: 900px) {
   .dock {
     flex-direction: column;
     flex: 0 0 auto;
@@ -158,10 +184,27 @@
 
   .dock-pane,
   .dock-pane--assets,
-  .dock-pane--inspector {
+  .dock-pane--inspector,
+  .dock-pane.collapsed {
     flex: 0 0 auto;
     width: auto;
     overflow: visible;
+  }
+
+  .dock-pane.collapsed .pane-head {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 8px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .dock-pane.collapsed .pane-title {
+    writing-mode: horizontal-tb;
+  }
+
+  .dock-pane.collapsed .pane-body {
+    display: block;
   }
 
   .dock-pane + .dock-pane {

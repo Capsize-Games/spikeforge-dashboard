@@ -118,6 +118,8 @@ export const KO: TranslationSet = {
     "에너지 추정치가 없습니다. 추정을 눌러 선택한 대상을 계산하세요.",
   "pane.data": "데이터 및 인코딩",
   "pane.network": "네트워크",
+  "pane.collapse": "창 접기",
+  "pane.expand": "창 펼치기",
   "dataset.modality": "모달리티",
   "dataset.availability": "사용 가능 여부",
   "dataset.available": "사용 가능",

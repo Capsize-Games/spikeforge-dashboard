@@ -16,6 +16,7 @@
  */
 
 import { _electron } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -98,6 +99,40 @@ function report(profile) {
   }
 }
 
+/**
+ * Kill a process and everything it spawned.
+ *
+ * Electron's window is the parent of a GPU process, a network utility, and the
+ * frozen backend. Killing only the parent leaves those three running: the CI
+ * step's process handle stays open, the job never reports its result, and the
+ * runner is wedged until someone clears them by hand — one run sat on a
+ * Windows channel release for eight hours doing exactly that.
+ */
+function killTree(pid) {
+  if (process.platform === "win32") {
+    try {
+      execFileSync("taskkill", ["/T", "/F", "/PID", String(pid)]);
+    } catch {
+      // Already gone.
+    }
+    return;
+  }
+  let children = "";
+  try {
+    children = execFileSync("pgrep", ["-P", String(pid)], { encoding: "utf8" });
+  } catch {
+    children = "";
+  }
+  for (const child of children.split("\n").filter(Boolean)) {
+    killTree(Number(child));
+  }
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // Already gone.
+  }
+}
+
 async function main() {
   const executable = resolveExecutable(parseArgs(process.argv.slice(2)));
   const scratch = mkdtempSync(path.join(tmpdir(), "spikeforge-smoke-"));
@@ -140,11 +175,11 @@ async function main() {
     report(profile);
     // `close()` is known to stall on the shared Electron application, and a
     // failing run must not hang a build machine waiting for it.
-    app.process().kill("SIGKILL");
+    killTree(app.process().pid);
     process.exit(1);
   }
 
-  app.process().kill("SIGKILL");
+  killTree(app.process().pid);
   process.exit(0);
 }
 

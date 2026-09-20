@@ -24,6 +24,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import { fetchJson } from "@capsizellc/commons/http";
+
 import { REPO_ROOT } from "../tests/e2e/support/env.mjs";
 
 const PINS_PATH = path.join(REPO_ROOT, "tests", "e2e", "backend-pins.json");
@@ -57,11 +59,7 @@ async function readManifest(source) {
   if (!/^https?:\/\//.test(source)) {
     return JSON.parse(readFileSync(source, "utf8"));
   }
-  const response = await fetch(source);
-  if (!response.ok) {
-    throw new Error(`${source} returned ${response.status}`);
-  }
-  return response.json();
+  return fetchJson(source, { timeoutMs: 10_000 });
 }
 
 /**

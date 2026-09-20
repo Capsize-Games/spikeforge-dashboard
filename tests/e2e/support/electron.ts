@@ -108,37 +108,39 @@ export async function launchDesktopApp(
 /**
  * Shut a launched application down, and make sure it is really gone.
  *
- * `app.close()` waits for Electron to quit of its own accord, which is the
- * behaviour `specs/electron/shell.spec.ts` asserts explicitly. Here the point
- * is only to clean up after a worker, so a quit that stalls must not be able
- * to fail an otherwise-passing run: past the deadline the process is killed,
- * and the backend it supervised is killed with it so no orphan holds a port.
+ * The shell spec exercises Playwright's graceful `app.close()` path directly.
+ * Worker cleanup has a different requirement: it must not leave an unresolved
+ * Playwright close request holding the worker open after the tests pass. Send
+ * a bounded OS-level termination to the process tree instead, then escalate
+ * to SIGKILL so the backend cannot orphan a port or inherited stdio pipe.
  */
 export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
-  const electron = launch.app.process();
-  const stalled = Symbol("stalled");
-  // Killing the process below makes the losing `close()` promise reject. It
-  // has to be handled here, or that rejection surfaces later with nothing
-  // awaiting it and takes the worker down with it.
-  const closed = launch.app
-    .close()
-    .then(() => "closed" as const)
-    .catch(() => "closed" as const);
-  const outcome = await Promise.race([
-    closed,
-    new Promise<typeof stalled>((resolve) =>
-      setTimeout(() => resolve(stalled), CLOSE_TIMEOUT_MS),
-    ),
-  ]);
-  if (outcome !== stalled) return;
+  const pids = [launch.app.process().pid, ...recordedPids(launch)]
+    .filter((pid): pid is number => pid !== undefined && pid !== null);
+  const electronPid = pids[0];
+  if (electronPid !== undefined) {
+    try {
+      process.kill(electronPid, "SIGTERM");
+    } catch {
+      // Already gone, which is the outcome this is reaching for anyway.
+    }
+  }
 
-  console.warn(
-    `desktop app did not quit within ${CLOSE_TIMEOUT_MS}ms; killing it`,
-  );
+  const deadline = Date.now() + CLOSE_TIMEOUT_MS;
+  while (pids.some(isRunning) && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  if (pids.some(isRunning)) {
+    console.warn(
+      `desktop app did not quit within ${CLOSE_TIMEOUT_MS}ms; killing it`,
+    );
+  }
   // Kill the whole tree, not just Electron. The shim spawns Python as a
   // grandchild, so killing the shim alone orphans a process that goes on
   // holding its port and the inherited stdio pipes.
-  for (const pid of [electron.pid, ...recordedPids(launch)]) {
+  for (const pid of pids) {
+    if (!isRunning(pid)) continue;
     if (pid === undefined || pid === null) continue;
     try {
       process.kill(pid, "SIGKILL");

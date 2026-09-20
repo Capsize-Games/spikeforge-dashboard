@@ -115,12 +115,15 @@ export async function launchDesktopApp(
  * to SIGKILL so the backend cannot orphan a port or inherited stdio pipe.
  */
 export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
-  const pids = [launch.app.process().pid, ...recordedPids(launch)]
+  // Keep Playwright's own ChildProcess handle. Killing the numeric pid leaves
+  // the ElectronApplication server waiting for the handle's close event.
+  const electronProcess = launch.app.process();
+  const pids = [electronProcess.pid, ...recordedPids(launch)]
     .filter((pid): pid is number => pid !== undefined && pid !== null);
-  const electronPid = pids[0];
+  const electronPid = electronProcess.pid;
   if (electronPid !== undefined) {
     try {
-      process.kill(electronPid, "SIGTERM");
+      electronProcess.kill("SIGTERM");
     } catch {
       // Already gone, which is the outcome this is reaching for anyway.
     }
@@ -141,13 +144,21 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   // holding its port and the inherited stdio pipes.
   for (const pid of pids) {
     if (!isRunning(pid)) continue;
-    if (pid === undefined || pid === null) continue;
     try {
-      process.kill(pid, "SIGKILL");
+      if (pid === electronPid) electronProcess.kill("SIGKILL");
+      else process.kill(pid, "SIGKILL");
     } catch {
       // Already gone, which is the outcome this is reaching for anyway.
     }
   }
+
+  // Once the owned process has exited, let Playwright close its Electron
+  // application channel. Calling app.close() before termination can block in
+  // Playwright's graceful quit handler when the worker is already unwinding.
+  await launch.app.close().catch(() => {
+    // The process may have been forcibly terminated, so the channel can
+    // already be closed by the time this cleanup reaches it.
+  });
 }
 
 /** The shim's and the backend's process ids, when the shim recorded them. */

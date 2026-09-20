@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +46,7 @@ jobs:
     # Which end-to-end tier this change needs, decided from the diff rather
     # than from a human remembering. `scripts/select_e2e_tier.mjs` owns the
     # rules and `scripts/select_e2e_tier.test.mjs` pins them.
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     outputs:
       tier: ${{ steps.select.outputs.tier }}
       smoke: ${{ steps.select.outputs.smoke }}
@@ -82,7 +82,7 @@ jobs:
     # origin, exactly as it is deployed.
     needs: changes
     if: needs.changes.outputs.smoke == 'true'
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -116,12 +116,10 @@ jobs:
             .e2e-data
           # The pins file is the whole input to provisioning, so a bumped
           # release combination invalidates the environment automatically.
-          # Keyed by runner.name, not just runner.os: .venv-e2e's own python
-          # binary has its interpreter's absolute path baked into its RPATH,
-          # so a cache built on one machine (or a GitHub-hosted runner) is
-          # not just stale but unusable on another -- it fails with
-          # "error while loading shared libraries", not a clean cache miss.
-          key: e2e-${{ runner.name }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
+          # The hosted Linux image is stable for this workflow, and the
+          # Python version is fixed above. The pins file is the full input to
+          # provisioning, so a release bump invalidates the environment.
+          key: e2e-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tests/e2e/backend-pins.json') }}
 
       - name: Provision the SpikeForge backend
         run: npm run e2e:backend

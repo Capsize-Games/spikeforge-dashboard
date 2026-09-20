@@ -15,11 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+          - os: ubuntu-latest
             channel: linux-x64
-          # Windows has no self-hosted runner on this workstation, so this leg
-          # still needs a GitHub-hosted machine. It will queue until hosted
-          # minutes are available; the Linux artifact publishes without it.
+          # Public release workflows run on GitHub-hosted machines for both
+          # platforms, so workstation state cannot affect a published build.
           - os: windows-latest
             channel: windows-x64
     runs-on: ${{ matrix.os }}
@@ -38,12 +37,6 @@ jobs:
           node-version: "22"
           cache: npm
 
-      # No `cache: pip`. The self-hosted runner's `_work` is a symlink onto
-      # another drive, and the action's dependency-file glob does not follow
-      # it, so it finds no pyproject.toml and fails the job outright -- before
-      # anything is built. The engine install below pulls Torch from its own
-      # index and installs the packages by path, so there was little for a
-      # hash-keyed pip cache to hold on to anyway.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -83,8 +76,8 @@ jobs:
         run: |
           app=release/linux-unpacked
           [ -d release/win-unpacked ] && app=release/win-unpacked
-          # A build machine with no session needs a virtual display; the
-          # self-hosted runner has a real one and must not be wrapped.
+          # GitHub-hosted Linux machines have no desktop session, so use a
+          # virtual display for the packaged Electron smoke test.
           if [ "$RUNNER_OS" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
             xvfb-run -a node scripts/smoke_packaged_desktop.mjs --app "$app"
           else
@@ -121,7 +114,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/desktop-v')
     needs: build
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:

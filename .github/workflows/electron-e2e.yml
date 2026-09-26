@@ -15,9 +15,13 @@ name: Electron e2e
 # marked `continue-on-error`: a genuine spec failure must still turn this
 # workflow red. Make this a required check again once the teardown is fixed.
 
+# Pull requests only. It used to run on `main` as well, which meant every
+# change was tested twice by the same 20-minute job on a single runner: once
+# on the pull request, then again on the merge of the commits it had just
+# tested. `main` now requires a pull request, so the second run could not
+# reach anything the first had not already seen, and it was queued in front of
+# the release build that a tag had just started.
 on:
-  push:
-    branches: [main]
   pull_request:
 
 concurrency:

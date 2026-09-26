@@ -7,15 +7,12 @@ name: Sync backend pins
 # nobody ships any more. This does it instead, and opens a pull request so the
 # bump is reviewed before it lands.
 #
-# KNOWN LIMITATION -- the pull request opens, but its checks do not start.
-# GitHub does not trigger workflow runs for events raised by the built-in
-# GITHUB_TOKEN, which is how it avoids workflows recursively triggering
-# themselves. So the bump lands as a pull request with no CI, and a human has
-# to close/reopen it or push to the branch to get it tested. The pull request
-# body says so. To make it fully unattended, swap `github.token` for a
-# personal access token or a GitHub App installation token stored as a secret;
-# that is a credential decision, not a code one, so it is deliberately not
-# made here.
+# The pull request is opened with `AUTOMATION_TOKEN` when that secret exists,
+# and falls back to the built-in `GITHUB_TOKEN` when it does not. The fallback
+# works, but its checks never start: GitHub does not trigger workflow runs for
+# events raised by the built-in token, to avoid workflows triggering
+# themselves. A bump opened that way sits with no CI until someone closes and
+# reopens it, so it can never satisfy auto-merge.
 
 on:
   schedule:
@@ -37,6 +34,8 @@ jobs:
     runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
 
       - uses: actions/setup-node@v4
         with:
@@ -44,9 +43,17 @@ jobs:
 
       - name: Update the pins from the engine manifest
         id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           node scripts/sync_backend_pins.mjs | tee /tmp/sync.log
-          if git diff --quiet -- tests/e2e/backend-pins.json; then
+          # The engine commit the desktop app builds from is derived from the
+          # version above, so it moves in the same pull request. Pinning them
+          # separately is how the release workflow ended up building a commit
+          # that was no longer on the engine's main branch.
+          node scripts/sync_engine_ref.mjs | tee -a /tmp/sync.log
+          if git diff --quiet -- tests/e2e/backend-pins.json \
+            .github/workflows/desktop-release.yml; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -55,7 +62,8 @@ jobs:
       - name: Open or update the pull request for the bump
         if: steps.sync.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          HAS_TOKEN: ${{ secrets.AUTOMATION_TOKEN != '' }}
         run: |
           set -euo pipefail
           # One stable branch, not a dated one. A dated branch opened a second
@@ -77,7 +85,8 @@ jobs:
           # Rebuild the branch from the current main each run, so the pins are
           # always the only difference and a merged bump leaves nothing stale.
           git checkout -B "$branch"
-          git add tests/e2e/backend-pins.json
+          git add tests/e2e/backend-pins.json \
+            .github/workflows/desktop-release.yml
 
           if git diff --cached --quiet; then
             echo "pins already match main; nothing to open"
@@ -107,11 +116,14 @@ jobs:
             echo "rebuilt from \`main\` on every run, so it always carries the"
             echo "newest pins and never accumulates duplicates."
             echo
-            echo "> **Checks do not start on their own here.** GitHub does not"
-            echo "> trigger workflow runs for a pull request opened with the"
-            echo "> built-in \`GITHUB_TOKEN\`, to avoid recursive runs. Close"
-            echo "> and reopen this pull request, or push to the branch, to"
-            echo "> run CI against it before merging."
+            if [ "${HAS_TOKEN:-}" != "true" ]; then
+              echo "> **Checks do not start on their own here.** This was"
+              echo "> opened with the built-in \`GITHUB_TOKEN\`, and GitHub"
+              echo "> does not trigger workflow runs for its events. Close and"
+              echo "> reopen this pull request, or push to the branch, to run"
+              echo "> CI. Set the \`AUTOMATION_TOKEN\` secret to remove this"
+              echo "> step."
+            fi
           } > /tmp/body.md
 
           # An open pull request from an earlier run already points at this

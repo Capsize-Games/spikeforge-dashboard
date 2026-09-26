@@ -1,16 +1,10 @@
 import { useState } from "react";
 
-import { accessToken } from "../accessToken";
+import { bundleUrl } from "../bundleUrl";
 import { useI18n } from "../i18n/I18nProvider";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { PublishAction } from "./PublishAction";
 import type { SavedModel } from "../types";
-
-/** `/api/bundle/<name>`, carrying the access token when the page has one. */
-function bundleHref(name: string): string {
-  const token = accessToken();
-  const query = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `/api/bundle/${encodeURIComponent(name)}${query}`;
-}
 
 interface Props {
   models: SavedModel[];
@@ -194,7 +188,7 @@ export function ModelPanel({
             </select>
             <a
               className={`apply small ${bundleTarget ? "" : "disabled"}`}
-              href={bundleTarget ? bundleHref(bundleTarget) : undefined}
+              href={bundleTarget ? bundleUrl(bundleTarget) : undefined}
               aria-disabled={!bundleTarget}
               onClick={(e) => {
                 if (!bundleTarget) e.preventDefault();
@@ -211,6 +205,7 @@ export function ModelPanel({
             <code>spikeforge-serve install &lt;file&gt;.spkf</code>, or serve it
             with <code>spikeforge-serve serve --bundle &lt;file&gt;.spkf</code>.
           </p>
+          <PublishAction modelName={bundleTarget} disabled={!bundleTarget} />
         </div>
       )}
 

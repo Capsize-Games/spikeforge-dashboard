@@ -93,8 +93,9 @@ refusing to navigate away from the local app, and stopping its engine on quit.
 ## Electron test lifecycle
 
 Each Electron test starts a fresh application instance and closes it during that
-test's teardown. This keeps failures and cleanup in one test from leaking into
-the next. On 2026-10-02, the focused shell and boot specs passed locally:
+test's teardown. The cleanup also reaps Linux descendants so Chromium child
+processes cannot keep the Playwright worker's stdio open. This keeps failures
+and cleanup in one test from leaking into the next. On 2026-10-02, the focused shell and boot specs passed locally:
 
 ```bash
 xvfb-run -a npx playwright test --project=electron \
@@ -102,8 +103,11 @@ xvfb-run -a npx playwright test --project=electron \
   tests/e2e/specs/smoke/boot.spec.ts
 ```
 
-That run passed 11 tests. A hosted Electron workflow run is still needed to
-verify the lifecycle on the hosted runner.
+The focused run passed 11 tests. The complete Electron project also passed
+locally: `xvfb-run -a npx playwright test --project=electron` completed 39/39
+tests and exited without a worker-teardown timeout. The hosted Electron workflow
+must still pass before this lifecycle change is considered verified on the
+hosted runner.
 
 ## Writing a spec
 

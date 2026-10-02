@@ -46,6 +46,7 @@ export interface DesktopLaunch {
 
 /** How long a graceful quit is given before the process is killed outright. */
 const CLOSE_TIMEOUT_MS = 30_000;
+const APP_CHANNEL_CLOSE_TIMEOUT_MS = 5_000;
 
 /**
  * Variables that make the Electron binary behave as plain Node.
@@ -155,10 +156,18 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   // Once the owned process has exited, let Playwright close its Electron
   // application channel. Calling app.close() before termination can block in
   // Playwright's graceful quit handler when the worker is already unwinding.
-  await launch.app.close().catch(() => {
+  const channelClose = launch.app.close().catch(() => {
     // The process may have been forcibly terminated, so the channel can
     // already be closed by the time this cleanup reaches it.
   });
+  let channelTimeout: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    channelClose,
+    new Promise<void>((resolve) => {
+      channelTimeout = setTimeout(resolve, APP_CHANNEL_CLOSE_TIMEOUT_MS);
+    }),
+  ]);
+  if (channelTimeout !== undefined) clearTimeout(channelTimeout);
 }
 
 /** The shim's and the backend's process ids, when the shim recorded them. */

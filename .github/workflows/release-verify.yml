@@ -1,0 +1,114 @@
+name: Verify published release
+
+# Downloads what a user downloads and launches it.
+#
+# The release gate in `desktop-release.yml` checks the build before it is
+# published. This checks the published files themselves, on both operating
+# systems, after the fact: the exact bytes on the release page, unpacked the
+# way a person unpacks them. It is the last thing between a broken upload and
+# a user, and it is the step that was being done by hand.
+#
+# It opens an issue when it fails, because an unattended pipeline has nobody
+# watching the run list.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to download and launch
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+            platform: linux
+          - os: windows-latest
+            platform: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download the published build
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
+        run: |
+          pattern='*windows*portable.exe'
+          [ "${{ matrix.platform }}" = "linux" ] && pattern='*linux-x86_64.tar.gz'
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$pattern" --dir artifact
+          ls -la artifact
+
+      # The tar is the whole point of shipping one: it carries the executable
+      # bit that an HTTP download cannot. If it comes out non-executable the
+      # download is broken for every Linux user, so check before launching.
+      - name: Unpack the Linux build
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          tar -xzf artifact/*.tar.gz
+          appimage=$(find . -maxdepth 1 -name '*.AppImage' -print -quit)
+          if [ ! -x "$appimage" ]; then
+            echo "::error::$appimage is not executable after extraction"
+            ls -l "$appimage"
+            exit 1
+          fi
+          "$appimage" --appimage-extract > /dev/null
+          echo "APP_DIR=squashfs-root" >> "$GITHUB_ENV"
+
+      - name: Unpack the Windows build
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          installer=$(find artifact -name '*.exe' -print -quit)
+          7z x "$installer" -oextract -y > /dev/null
+          7z x 'extract/$PLUGINSDIR/app-64.7z' -oapp -y > /dev/null
+          echo "APP_DIR=app" >> "$GITHUB_ENV"
+
+      - name: Launch it
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
+            xvfb-run -a node scripts/smoke_packaged_desktop.mjs --app "$APP_DIR"
+          else
+            node scripts/smoke_packaged_desktop.mjs --app "$APP_DIR"
+          fi
+
+      - name: Report a broken release
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Published release $TAG does not run on ${{ matrix.platform }}" \
+            --label bug \
+            --body "The published $TAG build for ${{ matrix.platform }} was
+          downloaded and launched, and did not reach a visible window serving
+          the dashboard.
+
+          The run log has the application's own startup log and, when the
+          engine started at all, its output:
+          $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          This release is on the release page and on itch.io now."

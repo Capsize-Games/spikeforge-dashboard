@@ -90,32 +90,20 @@ energy estimates, the hub catalog, and pipeline runs. It depends on `smoke` and
 engine on an ephemeral port, keeping data in the per-user application directory,
 refusing to navigate away from the local app, and stopping its engine on quit.
 
-## Known issue: Electron teardown on CI
+## Electron test lifecycle
 
-The desktop specs pass — 37/37 locally in about 90 seconds, and 37/37 on a CI
-runner too. What does not work on CI is Playwright's teardown of the shared
-Electron application: after every test has passed, the worker fails to exit and
-burns its full five-minute budget, so the run reports a failure with no failing
-test.
+Each Electron test starts a fresh application instance and closes it during that
+test's teardown. This keeps failures and cleanup in one test from leaking into
+the next. On 2026-10-02, the focused shell and boot specs passed locally:
 
-It has done this on three runs, through two attempted fixes — bounding
-`app.close()` with a deadline, then killing the whole process tree including
-the Python grandchild — and it has never reproduced locally. The cause is not
-yet understood. What is ruled out: the specs themselves, the backend shim's
-signal handling (it exits in about a second when signalled directly), and the
-desktop app's own quit path, which had a real bug that is fixed and separately
-tested (`hasExited` in `desktop/main_helpers.test.cjs`).
+```bash
+xvfb-run -a npx playwright test --project=electron \
+  tests/e2e/specs/electron/shell.spec.ts \
+  tests/e2e/specs/smoke/boot.spec.ts
+```
 
-Because of that, the Electron project runs in its own workflow
-(`.github/workflows/electron-e2e.yml`) rather than in `ci.yml`. A pull request
-whose tests all pass should not show red, because that teaches people to ignore
-the signal. The workflow is **not** `continue-on-error`, so a genuine spec
-failure still turns it red. Move it back into `ci.yml` once the teardown is
-fixed.
-
-If you pick this up: the next thing to try is not another patch to the cleanup
-path but changing the shape — launch a fresh Electron application per spec file
-instead of sharing one per worker, and measure what that costs.
+That run passed 11 tests. A hosted Electron workflow run is still needed to
+verify the lifecycle on the hosted runner.
 
 ## Writing a spec
 

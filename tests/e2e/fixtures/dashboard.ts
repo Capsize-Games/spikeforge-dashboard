@@ -39,32 +39,39 @@ interface Fixtures {
 
 type WorkerFixtures = DashboardWorkerOptions;
 
-/** The Electron process is shared by tests in one spec file only. */
-let fileLaunch: Awaited<ReturnType<typeof launchDesktopApp>> | null = null;
+/** Set by `electronApp` so the dependent launchRecord fixture can read it. */
+let launchedRecord: LaunchRecord | null = null;
 
 export const test = base.extend<Fixtures, WorkerFixtures>({
   shell: ["browser", { scope: "worker", option: true }],
 
-  electronApp: async ({ shell }, use) => {
+  electronApp: async ({ shell }, use, testInfo) => {
     if (shell !== "electron") {
       await use(null);
       return;
     }
-    if (fileLaunch === null) {
-      throw new Error("Electron app was not launched for this spec file");
+    const launch = await launchDesktopApp(`w${testInfo.workerIndex}-r${testInfo.retry}`);
+    launchedRecord = launch.readRecord();
+    try {
+      await use(launch.app);
+    } finally {
+      try {
+        await closeDesktopApp(launch);
+      } finally {
+        launchedRecord = null;
+      }
     }
-    await use(fileLaunch.app);
   },
 
-  launchRecord: async ({ shell }, use) => {
+  launchRecord: async ({ shell, electronApp }, use) => {
     if (shell !== "electron") {
       await use(null);
       return;
     }
-    if (fileLaunch === null) {
-      throw new Error("Electron app was not launched for this spec file");
+    if (electronApp === null || launchedRecord === null) {
+      throw new Error("Electron launch record is unavailable");
     }
-    await use(fileLaunch.readRecord());
+    await use(launchedRecord);
   },
 
   page: async ({ shell, page, electronApp }, use) => {
@@ -92,22 +99,6 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await dashboard.open();
     await use(dashboard);
   },
-});
-
-test.beforeAll(async ({ shell }, workerInfo) => {
-  test.setTimeout(180_000);
-  if (shell === "electron") {
-    fileLaunch = await launchDesktopApp(`w${workerInfo.workerIndex}`);
-  }
-});
-
-test.afterAll(async ({ shell }) => {
-  test.setTimeout(60_000);
-  if (shell === "electron" && fileLaunch !== null) {
-    const launch = fileLaunch;
-    fileLaunch = null;
-    await closeDesktopApp(launch);
-  }
 });
 
 export { expect };

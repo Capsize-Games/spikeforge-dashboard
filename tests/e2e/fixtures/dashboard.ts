@@ -31,46 +31,41 @@ interface Fixtures {
   dashboard: DashboardPage;
   /** Console errors and page crashes seen during the test. */
   consoleErrors: string[];
-}
-
-/**
- * `shell` is worker-scoped because the Electron application it selects is
- * launched once per worker, and a worker fixture cannot depend on a
- * test-scoped one.
- */
-interface WorkerFixtures extends DashboardWorkerOptions {
-  /** The Electron application, launched per worker, or null in a browser. */
+  /** The Electron application for this spec file, or null in a browser. */
   electronApp: ElectronApplication | null;
-  /** What Electron passed to the backend it spawned, or null in a browser. */
+  /** What Electron passed to the backend, or null in a browser. */
   launchRecord: LaunchRecord | null;
 }
 
-/** Set by the `electronApp` fixture so `launchRecord` can hand it on. */
-let launchedRecord: LaunchRecord | null = null;
+type WorkerFixtures = DashboardWorkerOptions;
+
+/** The Electron process is shared by tests in one spec file only. */
+let fileLaunch: Awaited<ReturnType<typeof launchDesktopApp>> | null = null;
 
 export const test = base.extend<Fixtures, WorkerFixtures>({
   shell: ["browser", { scope: "worker", option: true }],
 
-  electronApp: [
-    async ({ shell }, use, workerInfo) => {
-      if (shell !== "electron") {
-        await use(null);
-        return;
-      }
-      const launch = await launchDesktopApp(`w${workerInfo.workerIndex}`);
-      launchedRecord = launch.readRecord();
-      await use(launch.app);
-      await closeDesktopApp(launch);
-    },
-    { scope: "worker" },
-  ],
+  electronApp: async ({ shell }, use) => {
+    if (shell !== "electron") {
+      await use(null);
+      return;
+    }
+    if (fileLaunch === null) {
+      throw new Error("Electron app was not launched for this spec file");
+    }
+    await use(fileLaunch.app);
+  },
 
-  launchRecord: [
-    async ({ electronApp }, use) => {
-      await use(electronApp === null ? null : launchedRecord);
-    },
-    { scope: "worker" },
-  ],
+  launchRecord: async ({ shell }, use) => {
+    if (shell !== "electron") {
+      await use(null);
+      return;
+    }
+    if (fileLaunch === null) {
+      throw new Error("Electron app was not launched for this spec file");
+    }
+    await use(fileLaunch.readRecord());
+  },
 
   page: async ({ shell, page, electronApp }, use) => {
     if (shell !== "electron") {
@@ -97,6 +92,22 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await dashboard.open();
     await use(dashboard);
   },
+});
+
+test.beforeAll(async ({ shell }, workerInfo) => {
+  test.setTimeout(180_000);
+  if (shell === "electron") {
+    fileLaunch = await launchDesktopApp(`w${workerInfo.workerIndex}`);
+  }
+});
+
+test.afterAll(async ({ shell }) => {
+  test.setTimeout(60_000);
+  if (shell === "electron" && fileLaunch !== null) {
+    const launch = fileLaunch;
+    fileLaunch = null;
+    await closeDesktopApp(launch);
+  }
 });
 
 export { expect };

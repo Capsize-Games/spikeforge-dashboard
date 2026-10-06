@@ -1,0 +1,37 @@
+version: 2
+
+# Grouped deliberately. One pull request per ecosystem per week keeps the
+# end-to-end suite -- which provisions a Python environment and builds the
+# desktop shell -- from running once per dependency, and keeps an unattended
+# merge reviewing one change instead of thirty.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      # Electron and electron-builder decide what the packaged application
+      # is, so they land on their own where the packaged smoke test is the
+      # thing that judges them.
+      desktop-shell:
+        patterns:
+          - electron
+          - electron-builder
+      development:
+        dependency-type: development
+        exclude-patterns:
+          - electron
+          - electron-builder
+      production:
+        dependency-type: production
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns:
+          - "*"

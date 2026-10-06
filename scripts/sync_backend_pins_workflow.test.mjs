@@ -10,6 +10,9 @@ import { test } from "node:test";
 
 const branch = "chore/backend-pins";
 const pins = "tests/e2e/backend-pins.json";
+// The step commits the engine ref alongside the pins, so the fixture has
+// to carry that file too or `git add` fails on a missing pathspec.
+const releaseWorkflow = ".github/workflows/desktop-release.yml";
 const workflow = readFileSync(new URL(
   "../.github/workflows/sync-backend-pins.yml", import.meta.url,
 ), "utf8");
@@ -40,8 +43,10 @@ function repository(t) {
   git(seed, "config", "user.name", "Test");
   git(seed, "config", "user.email", "test@example.invalid");
   mkdirSync(join(seed, "tests/e2e"), { recursive: true });
+  mkdirSync(join(seed, ".github/workflows"), { recursive: true });
   writeFileSync(join(seed, pins), "old\n");
-  git(seed, "add", pins);
+  writeFileSync(join(seed, releaseWorkflow), "ref: old\n");
+  git(seed, "add", pins, releaseWorkflow);
   git(seed, "commit", "-m", "initial");
   git(seed, "remote", "add", "origin", origin);
   git(seed, "push", "origin", "main");
@@ -53,6 +58,7 @@ function checkout(repo, name, version) {
   git(repo.root, "clone", "--single-branch", "--branch", "main",
     `file://${repo.origin}`, cwd);
   writeFileSync(join(cwd, pins), `${version}\n`);
+  writeFileSync(join(cwd, releaseWorkflow), `ref: ${version}\n`);
   return cwd;
 }
 
@@ -76,7 +82,7 @@ if (args[1] === "list") {
 fs.writeFileSync(file, JSON.stringify(state));
 `;
 
-function runSync(repo, cwd) {
+function runSync(repo, cwd, env = {}) {
   const bin = join(repo.root, "bin");
   mkdirSync(bin, { recursive: true });
   writeFileSync(join(bin, "gh"), fakeGh);
@@ -88,6 +94,7 @@ function runSync(repo, cwd) {
   command(cwd, "bash", ["-e", "-o", "pipefail", "-c", isolated], {
     PATH: `${bin}:${process.env.PATH}`,
     PIN_SYNC_STATE: join(repo.root, "pr.json"),
+    ...env,
   });
 }
 
@@ -102,6 +109,10 @@ test("fresh runs update one PR and pick up a newer manifest", (t) => {
     assert.equal(git(cwd, "branch", "-r", "--list", `origin/${branch}`), "");
     runSync(repo, cwd);
     assert.equal(git(repo.origin, "show", `${branch}:${pins}`), version);
+    assert.equal(
+      git(repo.origin, "show", `${branch}:${releaseWorkflow}`),
+      `ref: ${version}`,
+    );
   }
   const state = JSON.parse(readFileSync(join(repo.root, "pr.json"), "utf8"));
   assert.deepEqual(state, { created: 1, edited: 2 });
@@ -124,4 +135,22 @@ test("a concurrent branch update is not overwritten", (t) => {
   assert.match(result.stderr, /stale info/);
   assert.equal(git(repo.origin, "rev-parse", branch),
     git(repo.origin, "rev-parse", "main"));
+});
+
+/**
+ * The warning only belongs on a pull request that really cannot run checks.
+ * Leaving it on one opened with `AUTOMATION_TOKEN` would tell a reader to go
+ * and do by hand the very step the token exists to remove.
+ */
+test("the body warns about checks only without an automation token", (t) => {
+  const repo = repository(t);
+  const withoutToken = checkout(repo, "no-token", "release-1");
+  runSync(repo, withoutToken);
+  const warned = readFileSync(join(withoutToken, "body.md"), "utf8");
+  assert.match(warned, /Checks do not start on their own/);
+
+  const withToken = checkout(repo, "with-token", "release-2");
+  runSync(repo, withToken, { HAS_TOKEN: "true" });
+  const quiet = readFileSync(join(withToken, "body.md"), "utf8");
+  assert.doesNotMatch(quiet, /Checks do not start on their own/);
 });

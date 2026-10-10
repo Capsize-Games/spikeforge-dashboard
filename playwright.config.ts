@@ -55,6 +55,12 @@ export default defineConfig<object, DashboardWorkerOptions>({
 
   projects: [
     {
+      // StrictMode replays effects only with the development React build.
+      name: "development",
+      testDir: "./tests/e2e/specs/development",
+      use: browser,
+    },
+    {
       // The tier that gates every change: boots, connects, every panel
       // renders against real server payloads. Minutes, not tens of minutes.
       name: "smoke",

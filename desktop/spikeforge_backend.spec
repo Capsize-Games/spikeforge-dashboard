@@ -27,6 +27,8 @@ for distribution in (
     except Exception:
         pass
 
+datas += collect_data_files("spikeforge")
+datas += collect_data_files("spikeforge_targets")
 datas += collect_data_files("spikeforge_hub")
 
 # The metadata licence trees PyInstaller records here (``<name>.dist-info/

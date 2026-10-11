@@ -60,6 +60,9 @@ jobs:
             ./_backend/packages/spikeforge-serve \
             ./_backend/packages/spikeforge-server
 
+      - name: Test frozen backend data collection
+        run: python scripts/frozen_backend_data_test.py
+
       - name: Freeze and launch-test backend
         timeout-minutes: 15
         run: python scripts/build_desktop_backend.py

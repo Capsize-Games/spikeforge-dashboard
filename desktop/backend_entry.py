@@ -35,40 +35,51 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Sequence[str] | None = None) -> None:
-    args_list = list(sys.argv[1:] if argv is None else argv)
-    if _run_frozen_child(args_list):
-        return
-    args = _parser().parse_args(args_list)
-
-    # Import after parsing so child-module dispatch does not initialize the
-    # FastAPI application (or warm a Torch device) unnecessarily.
-    from server.app import app, health
+def _self_test() -> None:
+    """Check frozen runtime data, the health handler, and dashboard files."""
+    from backend_data import check_runtime_data
+    from server.app import health
     from server.web import client_dist
 
-    if args.self_test:
-        if asyncio.run(health()) != {"status": "ok"}:
-            raise RuntimeError("health handler self-test failed")
-        dashboard = client_dist()
-        if dashboard is None or not (dashboard / "index.html").is_file():
-            raise RuntimeError("packaged dashboard self-test failed")
-        print("SpikeForge backend self-test passed")
-        return
-    if args.port is None:
-        raise SystemExit("--port is required unless --self-test is used")
+    check_runtime_data()
+    if asyncio.run(health()) != {"status": "ok"}:
+        raise RuntimeError("health handler self-test failed")
+    dashboard = client_dist()
+    if dashboard is None or not (dashboard / "index.html").is_file():
+        raise RuntimeError("packaged dashboard self-test failed")
+    print("SpikeForge backend self-test passed")
+
+
+def _serve(host: str, port: int) -> None:
+    """Initialize the server only after child dispatch and argument parsing."""
+    from server.app import app
 
     # Pure-Python protocol implementations are a little slower than uvloop
     # and httptools, but freeze consistently on Linux and Windows and are more
     # than adequate for a single local dashboard connection.
     uvicorn.run(
         app,
-        host=args.host,
-        port=args.port,
+        host=host,
+        port=port,
         reload=False,
         loop="asyncio",
         http="h11",
         ws="websockets",
     )
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    """Dispatch frozen workers, native self-tests, or the desktop server."""
+    args_list = list(sys.argv[1:] if argv is None else argv)
+    if _run_frozen_child(args_list):
+        return
+    args = _parser().parse_args(args_list)
+    if args.self_test:
+        _self_test()
+        return
+    if args.port is None:
+        raise SystemExit("--port is required unless --self-test is used")
+    _serve(args.host, args.port)
 
 
 if __name__ == "__main__":

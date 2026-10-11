@@ -2,13 +2,13 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
-  chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
-  writeFileSync,
+  copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { installButler, releaseArchives } from "./publish_itch_test_helpers.mjs";
 
 const source = dirname(dirname(fileURLToPath(import.meta.url)));
 const workflow = readFileSync(join(source,
@@ -31,10 +31,11 @@ function command(cwd, program, args, extra = {}) {
 }
 
 function checkout(cwd) {
-  // Materialize actual tracked release files; no script or manifest fixtures.
-  const archive = command(source, "git", ["archive", "HEAD", "package.json",
-    "scripts/publish_itch.sh"], { encoding: null });
-  command(cwd, "tar", ["-xf", "-"], { input: archive.stdout });
+  for (const name of ["package.json", "scripts/publish_itch.sh"]) {
+    const target = join(cwd, name);
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(join(source, name), target);
+  }
 }
 
 function checkoutFromWorkflow(cwd) {
@@ -49,25 +50,11 @@ function checkoutFromWorkflow(cwd) {
   checkout(destination);
 }
 
-// Only Butler's remote API is replaced. Bash, Node and source files are real.
-const butler = `#!/usr/bin/env node
-import fs from "node:fs";
-fs.appendFileSync(process.env.DESKTOP_PUBLISH_LOG,
-  JSON.stringify(process.argv.slice(2)) + String.fromCharCode(10));
-`;
-
 function workspace(t) {
   const cwd = mkdtempSync(join(tmpdir(), "desktop-release-test-"));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
-  const bin = join(cwd, "bin");
-  mkdirSync(bin);
-  writeFileSync(join(bin, "butler"), butler);
-  chmodSync(join(bin, "butler"), 0o755);
-  mkdirSync(join(cwd, "artifacts"));
-  for (const name of [
-    `SpikeForge-Desktop-${version}-linux-x86_64.tar.gz`,
-    `SpikeForge-Desktop-${version}-windows-x64.zip`,
-  ]) writeFileSync(join(cwd, "artifacts", name), "archive input\n");
+  installButler(cwd);
+  releaseArchives(cwd, version);
   return cwd;
 }
 
@@ -79,17 +66,18 @@ function publish(cwd) {
   });
   const calls = readFileSync(log, "utf8").trim().split("\n")
     .map((line) => JSON.parse(line));
-  const pushes = calls.filter((args) => args[0] === "push");
+  const pushes = calls.filter(({ args }) => args[0] === "push");
   assert.equal(pushes.length, 2);
-  assert.deepEqual(pushes.map((args) => args.at(-1)), [
+  assert.deepEqual(pushes.map(({ args }) => args.at(-1)), [
     "capsizegames/spikeforge-desktop:linux-x64",
     "capsizegames/spikeforge-desktop:windows-x64",
   ]);
-  for (const args of pushes) {
+  for (const { args, sourceType } of pushes) {
     assert.equal(args[args.indexOf("--userversion") + 1], version);
-    assert.ok(existsSync(join(cwd, args.at(-2))));
+    if (sourceType === "file") assert.ok(existsSync(join(cwd, args.at(-2))));
+    else assert.ok(!existsSync(args.at(-2)), "temporary source is cleaned");
   }
-  assert.deepEqual(calls.at(-1), ["status",
+  assert.deepEqual(calls.at(-1).args, ["status",
     "capsizegames/spikeforge-desktop"]);
 }
 

@@ -135,6 +135,9 @@ jobs:
       - name: Smoke tier
         run: npx playwright test --project=smoke
 
+      - name: Development connection lifecycle
+        run: npx playwright test --project=development
+
       - name: Full tier
         # Real training, checkpoints, inference, deployment reports, and
         # pipeline runs. Minutes of CPU work, so it is reserved for changes

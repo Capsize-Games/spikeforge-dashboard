@@ -22,6 +22,7 @@ runs start in seconds.
 | Command | What it runs |
 | --- | --- |
 | `npm run test:e2e` | Smoke tier in Chromium (~35s once warm) |
+| `npm run test:e2e:development` | StrictMode reconnection in Vite |
 | `npm run test:e2e:full` | Full workflows, including a real training run (~6 min) |
 | `npm run test:e2e:electron` | Smoke tier plus shell specs in the desktop app (~45s) |
 | `npm run test:e2e:all` | Everything |
@@ -66,6 +67,11 @@ tests themselves write — checkpoints, pipelines, registries — goes to
 run's state.
 
 ## The projects
+
+**`development`** runs the Vite development app against the same real backend
+to test reconnection after React StrictMode replays the connection effect.
+Production React does not perform that replay, so the built-app smoke test
+cannot cover it. This project records and closes actual engine sockets.
 
 **`smoke`** gates every change. It covers booting, connecting, reconnecting
 after a dropped socket, all six tabs rendering, the four bootstrap requests

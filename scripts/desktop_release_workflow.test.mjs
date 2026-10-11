@@ -8,7 +8,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { installButler, releaseArchives } from "./publish_itch_test_helpers.mjs";
+import {
+  installButler, releaseArchives,
+} from "./publish_itch_test_helpers.mjs";
 
 const source = dirname(dirname(fileURLToPath(import.meta.url)));
 const workflow = readFileSync(join(source,

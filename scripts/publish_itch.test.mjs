@@ -9,7 +9,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { installButler, releaseArchives } from "./publish_itch_test_helpers.mjs";
+import {
+  installButler, releaseArchives,
+} from "./publish_itch_test_helpers.mjs";
 
 const source = dirname(dirname(fileURLToPath(import.meta.url)));
 const script = join(source, "scripts/publish_itch.sh");
@@ -72,7 +74,7 @@ test("Windows push failure cleans its extracted directory", (t) => {
   assert.equal(calls.length, 2, "failed push must not report final status");
 });
 
-test("invalid Windows archive cleans up before either channel is pushed", (t) => {
+test("invalid ZIP cleans up before either channel is pushed", (t) => {
   const context = fixture(t);
   writeFileSync(join(context.artifacts,
     `app-${version}-windows-x64.zip`), "invalid ZIP\n");

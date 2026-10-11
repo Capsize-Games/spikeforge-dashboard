@@ -23,7 +23,8 @@ root, version, files = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
 with zipfile.ZipFile(root / f"app-{version}-windows-x64.zip", "w") as archive:
     for name, content in json.loads(files).items():
         archive.writestr(name, content)
-with tarfile.open(root / f"app-{version}-linux-x86_64.tar.gz", "w:gz") as archive:
+linux = root / f"app-{version}-linux-x86_64.tar.gz"
+with tarfile.open(linux, "w:gz") as archive:
     data = b"linux executable\\n"
     member = tarfile.TarInfo(f"app-{version}.AppImage")
     member.size, member.mode = len(data), 0o755
@@ -42,6 +43,7 @@ import fs from "node:fs";
 import path from "node:path";
 const args = process.argv.slice(2);
 const entry = { args };
+const expected = ${JSON.stringify(windowsFiles)};
 if (args[0] === "push") {
   const source = args.at(-2);
   entry.sourceType = fs.statSync(source).isDirectory() ? "directory" : "file";
@@ -50,7 +52,7 @@ if (args[0] === "push") {
   if (args.at(-1).endsWith(":windows-x64")) {
     assert.equal(entry.sourceType, "directory",
       "Windows push must use extracted runtime files, not a ZIP path");
-    for (const [name, content] of Object.entries(${JSON.stringify(windowsFiles)})) {
+    for (const [name, content] of Object.entries(expected)) {
       assert.equal(fs.readFileSync(path.join(source, name), "utf8"), content);
     }
     assert.ok(!args.includes("--ignore"), "all Windows licenses must ship");

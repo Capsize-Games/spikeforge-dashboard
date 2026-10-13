@@ -21,16 +21,16 @@ jobs:
             channel: windows-x64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check out the SpikeForge engine
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Capsize-Games/spikeforge
           ref: 0885749b9b89de4bb56b69c5fea525275fb8c8ce
           path: _backend
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -38,7 +38,7 @@ jobs:
       # The engine install pulls Torch from its own index and installs the
       # packages by path, so there is little for a hash-keyed pip cache to
       # hold on to.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -104,7 +104,7 @@ jobs:
           tar -tvzf "${appimage%.AppImage}.tar.gz"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: spikeforge-desktop-${{ matrix.channel }}
           path: |
@@ -119,12 +119,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*
           generate_release_notes: true

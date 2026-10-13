@@ -8,11 +8,11 @@
   ],
   "protocol_version": "1.0",
   "packages": {
-    "spikeforge": "0.5.0",
-    "spikeforge-targets": "0.2.0",
-    "spikeforge-hub": "0.3.1",
-    "spikeforge-serve": "0.2.3",
-    "spikeforge-server": "0.3.3"
+    "spikeforge": "0.5.1",
+    "spikeforge-targets": "0.2.1",
+    "spikeforge-hub": "0.3.2",
+    "spikeforge-serve": "0.2.4",
+    "spikeforge-server": "0.3.4"
   },
   "extras": {
     "spikeforge": [

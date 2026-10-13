@@ -67,7 +67,7 @@ export class DashboardPage extends DashboardShell {
   }
 
   /**
-   * A labelled control, addressed by the `data-field` hook `SliderField` and
+   * A labelled control, addressed by the `data-field` hook `NumberField` and
    * `SelectField` carry. Field labels like `epochs` and `subset` are the
    * server's own parameter names and are not translated, which is what makes
    * them usable as selectors.
@@ -76,11 +76,18 @@ export class DashboardPage extends DashboardShell {
     return this.page.locator(`[data-field="${label}"]`);
   }
 
-  /** Set a range slider and wait for the interface to echo the new value. */
-  async setSlider(label: string, value: number): Promise<void> {
-    const field = this.field(label);
-    await field.locator('input[type="range"]').fill(String(value));
-    await expect(field.locator("b")).toHaveText(String(value));
+  /**
+   * Type into a labelled numeric field and wait for it to echo the value.
+   *
+   * Every numeric parameter is drawn as a box — the ones with a range beside
+   * them commit through the same box — so this is the one way to set any of
+   * them, and it fails loudly if a field stops being editable.
+   */
+  async setField(label: string, value: number): Promise<void> {
+    const box = this.field(label).locator(".num-input");
+    await box.fill(String(value));
+    await box.press("Enter");
+    await expect(box).toHaveValue(String(value));
   }
 
   // --- training ---------------------------------------------------------
@@ -88,8 +95,8 @@ export class DashboardPage extends DashboardShell {
   /**
    * Shrink the run to something a CPU finishes in a reasonable time.
    *
-   * These are the same sliders a user drags. Accuracy is irrelevant here --
-   * what is under test is that the whole training path runs and reports.
+   * These are the same fields a user types into. Accuracy is irrelevant here
+   * -- what is under test is that the whole training path runs and reports.
    *
    * `subset` is a **divisor, not a percentage**: `build_loader` reduces the
    * split to `len / subset`, and skips the reduction entirely when it is 1.
@@ -100,11 +107,11 @@ export class DashboardPage extends DashboardShell {
    */
   async useFastTrainingConfig(): Promise<void> {
     await this.tab("model");
-    await this.setSlider("epochs", 1);
-    await this.setSlider("subset", 50);
-    await this.setSlider("num_steps", 10);
-    await this.setSlider("hidden", 64);
-    await this.setSlider("batch_size", 64);
+    await this.setField("epochs", 1);
+    await this.setField("subset", 50);
+    await this.setField("num_steps", 10);
+    await this.setField("hidden", 64);
+    await this.setField("batch_size", 64);
   }
 
   /** The architecture picker, addressed by its guided-tour hook. */

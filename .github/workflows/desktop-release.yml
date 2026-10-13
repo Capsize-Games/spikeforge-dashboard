@@ -15,11 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+          - os: ubuntu-latest
             channel: linux-x64
-          # Windows has no self-hosted runner on this workstation, so this leg
-          # still needs a GitHub-hosted machine. It will queue until hosted
-          # minutes are available; the Linux artifact publishes without it.
           - os: windows-latest
             channel: windows-x64
     runs-on: ${{ matrix.os }}
@@ -30,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Capsize-Games/spikeforge
-          ref: aee8b1df86cd1fddfb937e6064484901e8aa1c8f
+          ref: 0885749b9b89de4bb56b69c5fea525275fb8c8ce
           path: _backend
 
       - uses: actions/setup-node@v4
@@ -38,12 +35,9 @@ jobs:
           node-version: "22"
           cache: npm
 
-      # No `cache: pip`. The self-hosted runner's `_work` is a symlink onto
-      # another drive, and the action's dependency-file glob does not follow
-      # it, so it finds no pyproject.toml and fails the job outright -- before
-      # anything is built. The engine install below pulls Torch from its own
-      # index and installs the packages by path, so there was little for a
-      # hash-keyed pip cache to hold on to anyway.
+      # The engine install pulls Torch from its own index and installs the
+      # packages by path, so there is little for a hash-keyed pip cache to
+      # hold on to.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -66,6 +60,9 @@ jobs:
             ./_backend/packages/spikeforge-serve \
             ./_backend/packages/spikeforge-server
 
+      - name: Test frozen backend data collection
+        run: python scripts/frozen_backend_data_test.py
+
       - name: Freeze and launch-test backend
         timeout-minutes: 15
         run: python scripts/build_desktop_backend.py
@@ -83,8 +80,7 @@ jobs:
         run: |
           app=release/linux-unpacked
           [ -d release/win-unpacked ] && app=release/win-unpacked
-          # A build machine with no session needs a virtual display; the
-          # self-hosted runner has a real one and must not be wrapped.
+          # Hosted Linux runners need a virtual display for the packaged app.
           if [ "$RUNNER_OS" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
             xvfb-run -a node scripts/smoke_packaged_desktop.mjs --app "$app"
           else
@@ -115,13 +111,15 @@ jobs:
             release/*.AppImage
             release/*.tar.gz
             release/*.exe
+            release/*.zip
           if-no-files-found: error
 
   release:
     if: startsWith(github.ref, 'refs/tags/desktop-v')
     needs: build
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -150,7 +148,10 @@ jobs:
 
             ### Windows
 
-            Run the portable `.exe`. There is no installation step.
+            Run `SpikeForge-Desktop-*-windows-x64-setup.exe` for a per-user
+            installation, or extract `SpikeForge-Desktop-*-windows-x64.zip`
+            and run
+            `SpikeForge Desktop.exe` from the extracted directory.
 
       - name: Publish to itch.io
         # Every desktop release ships to itch.io alongside the GitHub

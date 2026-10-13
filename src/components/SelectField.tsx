@@ -29,10 +29,7 @@ export function SelectField({
 }: Props) {
   return (
     <label className="field" data-field={label} data-tour={tour}>
-      <span className="field-label">
-        <span>{label}</span>
-        <HelpTip text={help} />
-      </span>
+      <span className="field-label">{label}</span>
       <select
         value={value}
         disabled={disabled}
@@ -44,6 +41,7 @@ export function SelectField({
           </option>
         ))}
       </select>
+      <HelpTip text={help} />
     </label>
   );
 }

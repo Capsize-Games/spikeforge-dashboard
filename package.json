@@ -1,7 +1,7 @@
 {
   "name": "spikeforge-dashboard",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.7",
   "description": "Desktop and browser interface for the SpikeForge spiking-neural-network toolkit.",
   "desktopName": "SpikeForge Desktop",
   "author": "Capsize LLC <contact@capsizegames.com>",
@@ -22,6 +22,7 @@
     "e2e:pins:sync": "node scripts/sync_backend_pins.mjs && node scripts/sync_engine_ref.mjs",
     "e2e:typecheck": "tsc --noEmit -p tests/e2e/tsconfig.json",
     "test:e2e": "npm run build && playwright test --project=smoke",
+    "test:e2e:development": "npm run build && playwright test --project=development",
     "test:e2e:full": "npm run build && playwright test --project=full",
     "test:e2e:electron": "npm run build && playwright test --project=electron",
     "test:e2e:all": "npm run build && playwright test",
@@ -29,6 +30,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capsizellc/commons": "^0.1.1",
     "@xyflow/react": "^12.11.6",
     "lucide-react": "^1.45.0",
     "react": "^18.3.1",

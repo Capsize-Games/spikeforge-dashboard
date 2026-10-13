@@ -3,7 +3,8 @@ import { useI18n } from "../i18n/I18nProvider";
 import { HELP } from "../helpText";
 import { useTargetSelection } from "../hooks/useTargetSelection";
 import type { TargetSummary } from "../targetTypes";
-import { HelpTip } from "./HelpTip";
+import { Button } from "./Button";
+import { PanelHeader } from "./PanelHeader";
 
 interface Props {
   payload: EnergyPayload | null;
@@ -101,23 +102,21 @@ export function EnergyPanel({ payload, targets, loading, onRun }: Props) {
 
   return (
     <div className="panel energy-panel" data-tour="energy">
-      <div className="panel-title row-title">
-        <span>
-          {t("energy.title")}
-          <HelpTip text={HELP.energy} />
-        </span>
-        <span className="panel-actions">
-          <button
-            type="button"
-            className="apply small"
+      <PanelHeader
+        title={t("energy.title")}
+        hint={HELP.energy}
+        actions={
+          <Button
+            variant="primary"
+            small
+            testId="energy-run"
             onClick={() => onRun(target)}
-            data-testid="energy-run"
             disabled={loading || names.length === 0}
           >
             {loading ? t("energy.estimating") : t("energy.estimate")}
-          </button>
-        </span>
-      </div>
+          </Button>
+        }
+      />
 
       <select
         className="energy-target"

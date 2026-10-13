@@ -27,7 +27,15 @@ for distribution in (
     except Exception:
         pass
 
+datas += collect_data_files("spikeforge")
+datas += collect_data_files("spikeforge_targets")
 datas += collect_data_files("spikeforge_hub")
+
+# The metadata licence trees PyInstaller records here (``<name>.dist-info/
+# licenses/...``) are re-rooted under ``third_party_licenses/`` by
+# ``scripts/build_desktop_backend.py`` once the bundle is built. Filtering
+# ``datas`` here would not be enough: PyInstaller's own hooks append the
+# metadata during Analysis, after this list is assembled.
 
 hiddenimports = (
     collect_submodules("server")

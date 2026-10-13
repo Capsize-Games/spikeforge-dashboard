@@ -3,6 +3,7 @@ import { Heart } from "lucide-react";
 import { LESSONS } from "../tour/lessons";
 import type { ExecutionMode } from "../types";
 import { useI18n } from "../i18n/I18nProvider";
+import { AccountControl } from "./AccountControl";
 import { IconButton } from "./IconButton";
 import { LanguageSelect } from "./LanguageSelect";
 import { ModeToggle } from "./ModeToggle";
@@ -60,6 +61,7 @@ export function TopBar({
           onOpen={onOpenTour}
         />
         <LanguageSelect />
+        <AccountControl />
         <IconButton
           icon={Heart}
           label={t("nav.donate")}

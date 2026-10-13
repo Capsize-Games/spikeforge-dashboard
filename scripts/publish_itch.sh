@@ -26,8 +26,17 @@ if [[ -z "$linux_archive" || -z "$windows_archive" ]]; then
   exit 1
 fi
 
+# Butler's ZIP comparison tries to inspect archive members as filesystem paths.
+# Give it extracted files so nested runtime packages and licenses stay intact.
+windows_dir=$(mktemp -d "${TMPDIR:-/tmp}/spikeforge-itch-windows.XXXXXXXX")
+trap 'rm -rf -- "$windows_dir"' EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+unzip -q "$windows_archive" -d "$windows_dir"
+
 butler push --if-changed --fix-permissions --userversion "$version" \
   "$linux_archive" "$target:linux-x64"
 butler push --if-changed --fix-permissions --userversion "$version" \
-  "$windows_archive" "$target:windows-x64"
+  "$windows_dir" "$target:windows-x64"
 butler status "$target"

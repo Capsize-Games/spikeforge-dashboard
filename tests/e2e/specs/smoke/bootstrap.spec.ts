@@ -75,5 +75,15 @@ test.describe("bootstrap", () => {
     // a sample. Reading the pixels distinguishes "drew the digit" from "drew
     // nothing".
     await dashboard.expectCanvasDrawn(canvases.first());
+
+    // The data pane's own preview shows the same frame. It waits on nothing
+    // new — the sample the viewer just drew is already in state — so this
+    // costs no extra time and covers a second pane rendering real data.
+    const preview = dashboard
+      .panel("model")
+      .locator(".sample-preview canvas")
+      .first();
+    await expect(preview).toHaveCount(1);
+    await dashboard.expectCanvasDrawn(preview);
   });
 });

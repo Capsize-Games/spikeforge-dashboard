@@ -8,6 +8,7 @@ import type {
 import { HELP, TRAIN_HELP } from "../helpText";
 import { ClassSpikeBarsFromInference } from "./ClassSpikeBarsFromInference";
 import { HelpTip } from "./HelpTip";
+import { PanelHeader } from "./PanelHeader";
 import { confidenceSeries } from "./readoutMath";
 
 interface Props {
@@ -118,11 +119,14 @@ export function PredictionPanel({
       )}
 
       <div className="panel displayed-sample" data-testid="prediction-panel">
-        <div className="panel-title row-title">
-          <span>Prediction (displayed sample)</span>
-          <span className="panel-actions">
-            <HelpTip text={HELP.inference} />
-            <label className="toggle" title="Auto-predict the displayed sample">
+        <PanelHeader
+          title="Prediction (displayed sample)"
+          hint={HELP.inference}
+          actions={
+            <label
+              className="toggle"
+              title="Auto-predict the displayed sample"
+            >
               <input
                 type="checkbox"
                 checked={autoPredict}
@@ -132,8 +136,8 @@ export function PredictionPanel({
               />
               <span className="toggle-track" aria-hidden="true" />
             </label>
-          </span>
-        </div>
+          }
+        />
         {autoPredict && inference ? (
           <>
             <PredictionReadout

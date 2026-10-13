@@ -30,6 +30,28 @@ def _executable(bundle: Path) -> Path:
     return bundle / f"spikeforge-backend{suffix}"
 
 
+def _relocate_licences(bundle: Path) -> None:
+    """Move each distribution's metadata licence tree to a top-level folder.
+
+    PyInstaller records them as ``<name>.dist-info/licenses/...``, and numpy's
+    is nested several levels deep. butler patches the new Windows archive
+    against the one already on the itch.io channel and dies on that path with
+    ``lstat ...numpy/linalg: not a directory``, so the channel never updates.
+    Rewriting ``datas`` in the spec is not enough: PyInstaller's own hooks add
+    the metadata during Analysis, after the spec's list is built. Doing it here,
+    on the finished bundle, catches every distribution. No licence text is
+    dropped — the BSD notices have to ship — only the path changes.
+    """
+    for dist_info in sorted(bundle.glob("*.dist-info")):
+        licences = dist_info / "licenses"
+        if not licences.is_dir():
+            continue
+        name = dist_info.name[: -len(".dist-info")]
+        target = bundle / "third_party_licenses" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(licences), str(target))
+
+
 def _smoke_test(bundle: Path) -> None:
     executable = _executable(bundle)
     env = os.environ.copy()
@@ -104,6 +126,7 @@ def main() -> None:
             cwd=DESKTOP,
             check=True,
         )
+    _relocate_licences(bundle)
     _smoke_test(bundle)
     print(f"desktop backend smoke test passed: {_executable(bundle)}")
 

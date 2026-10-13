@@ -16,6 +16,7 @@
  */
 
 import { _electron } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -29,6 +30,26 @@ const EXECUTABLES = [
 ];
 
 const START_TIMEOUT_MS = 300_000;
+
+/**
+ * Variables that make the Electron binary behave as plain Node.
+ *
+ * A VS Code integrated terminal exports `ELECTRON_RUN_AS_NODE=1` for its own
+ * child processes, and a CI runner started from one inherits it. The packaged
+ * binary then reads Electron's own switches as Node options, exits before the
+ * first window, and Playwright reports only "Process failed to launch!". The
+ * Electron suite strips the same variables in `tests/e2e/support/electron.ts`.
+ */
+const NODE_MODE_VARS = ["ELECTRON_RUN_AS_NODE", "ELECTRON_NO_ATTACH_CONSOLE"];
+
+/** The parent environment with the Node-mode switches removed. */
+function desktopEnv() {
+  const env = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined && !NODE_MODE_VARS.includes(key)) env[key] = value;
+  }
+  return env;
+}
 
 function parseArgs(argv) {
   const args = { app: null, exe: null };
@@ -78,6 +99,40 @@ function report(profile) {
   }
 }
 
+/**
+ * Kill a process and everything it spawned.
+ *
+ * Electron's window is the parent of a GPU process, a network utility, and the
+ * frozen backend. Killing only the parent leaves those three running: the CI
+ * step's process handle stays open, the job never reports its result, and the
+ * runner is wedged until someone clears them by hand — one run sat on a
+ * Windows channel release for eight hours doing exactly that.
+ */
+function killTree(pid) {
+  if (process.platform === "win32") {
+    try {
+      execFileSync("taskkill", ["/T", "/F", "/PID", String(pid)]);
+    } catch {
+      // Already gone.
+    }
+    return;
+  }
+  let children = "";
+  try {
+    children = execFileSync("pgrep", ["-P", String(pid)], { encoding: "utf8" });
+  } catch {
+    children = "";
+  }
+  for (const child of children.split("\n").filter(Boolean)) {
+    killTree(Number(child));
+  }
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // Already gone.
+  }
+}
+
 async function main() {
   const executable = resolveExecutable(parseArgs(process.argv.slice(2)));
   const scratch = mkdtempSync(path.join(tmpdir(), "spikeforge-smoke-"));
@@ -87,6 +142,7 @@ async function main() {
   const app = await _electron.launch({
     executablePath: executable,
     args: [`--user-data-dir=${profile}`],
+    env: desktopEnv(),
     timeout: 120_000,
   });
 
@@ -119,11 +175,11 @@ async function main() {
     report(profile);
     // `close()` is known to stall on the shared Electron application, and a
     // failing run must not hang a build machine waiting for it.
-    app.process().kill("SIGKILL");
+    killTree(app.process().pid);
     process.exit(1);
   }
 
-  app.process().kill("SIGKILL");
+  killTree(app.process().pid);
   process.exit(0);
 }
 

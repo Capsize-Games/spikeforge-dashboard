@@ -17,7 +17,8 @@ not to this record. Verified against `main` on 2026-10-13
   by this audit.
 - **Product boundary.** A React + Vite single-page app that talks to
   the spikeforge interpreter server over a versioned WebSocket
-  protocol (currently `1.0`). It is a **client**: it holds almost no
+  protocol (currently `1.1`; negotiation is major-only, so `1.0` clients
+  keep working). It is a **client**: it holds almost no
   logic of its own, and the end-to-end suite — built app against a
   real server — is what shows a change works.
 - **Dashboard versus desktop-runtime boundary.**

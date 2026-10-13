@@ -46,6 +46,7 @@ export interface DesktopLaunch {
 
 /** How long a graceful quit is given before the process is killed outright. */
 const CLOSE_TIMEOUT_MS = 30_000;
+const APP_CHANNEL_CLOSE_TIMEOUT_MS = 5_000;
 
 /**
  * Variables that make the Electron binary behave as plain Node.
@@ -118,8 +119,9 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   // Keep Playwright's own ChildProcess handle. Killing the numeric pid leaves
   // the ElectronApplication server waiting for the handle's close event.
   const electronProcess = launch.app.process();
-  const pids = [electronProcess.pid, ...recordedPids(launch)]
+  const roots = [electronProcess.pid, ...recordedPids(launch)]
     .filter((pid): pid is number => pid !== undefined && pid !== null);
+  const pids = [...new Set(roots.flatMap(processTree))];
   const electronPid = electronProcess.pid;
   if (electronPid !== undefined) {
     try {
@@ -139,9 +141,9 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
       `desktop app did not quit within ${CLOSE_TIMEOUT_MS}ms; killing it`,
     );
   }
-  // Kill the whole tree, not just Electron. The shim spawns Python as a
-  // grandchild, so killing the shim alone orphans a process that goes on
-  // holding its port and the inherited stdio pipes.
+  // Kill every captured descendant, not just the Electron and backend PIDs.
+  // Chromium renderer/GPU children can inherit the Playwright stdio pipes; an
+  // orphaned child keeps the worker alive after all tests have passed.
   for (const pid of pids) {
     if (!isRunning(pid)) continue;
     try {
@@ -155,10 +157,18 @@ export async function closeDesktopApp(launch: DesktopLaunch): Promise<void> {
   // Once the owned process has exited, let Playwright close its Electron
   // application channel. Calling app.close() before termination can block in
   // Playwright's graceful quit handler when the worker is already unwinding.
-  await launch.app.close().catch(() => {
+  const channelClose = launch.app.close().catch(() => {
     // The process may have been forcibly terminated, so the channel can
     // already be closed by the time this cleanup reaches it.
   });
+  let channelTimeout: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    channelClose,
+    new Promise<void>((resolve) => {
+      channelTimeout = setTimeout(resolve, APP_CHANNEL_CLOSE_TIMEOUT_MS);
+    }),
+  ]);
+  if (channelTimeout !== undefined) clearTimeout(channelTimeout);
 }
 
 /** The shim's and the backend's process ids, when the shim recorded them. */
@@ -188,6 +198,17 @@ export function onlyInElectron<T>(value: T | null, what: string): T {
 
 /** True when a process id is still running. */
 export function isRunning(pid: number): boolean {
+  if (process.platform === "linux") {
+    try {
+      const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
+      const state = stat.slice(stat.lastIndexOf(")") + 2).split(" ", 1)[0];
+      // A zombie has exited and no longer owns file descriptors, even if its
+      // parent has not reaped it yet.
+      if (state === "Z") return false;
+    } catch {
+      return false;
+    }
+  }
   try {
     // Signal 0 performs the permission and existence checks without
     // delivering anything.
@@ -196,4 +217,17 @@ export function isRunning(pid: number): boolean {
   } catch {
     return false;
   }
+}
+
+/** Capture a process and its Linux descendants before the parent exits. */
+function processTree(pid: number): number[] {
+  if (process.platform !== "linux") return [pid];
+  let children: number[];
+  try {
+    const raw = readFileSync(`/proc/${pid}/task/${pid}/children`, "utf8").trim();
+    children = raw ? raw.split(/\s+/).map(Number).filter(Number.isInteger) : [];
+  } catch {
+    return [pid];
+  }
+  return [pid, ...children.flatMap(processTree)];
 }

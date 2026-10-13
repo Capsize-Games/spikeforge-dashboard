@@ -31,46 +31,48 @@ interface Fixtures {
   dashboard: DashboardPage;
   /** Console errors and page crashes seen during the test. */
   consoleErrors: string[];
-}
-
-/**
- * `shell` is worker-scoped because the Electron application it selects is
- * launched once per worker, and a worker fixture cannot depend on a
- * test-scoped one.
- */
-interface WorkerFixtures extends DashboardWorkerOptions {
-  /** The Electron application, launched per worker, or null in a browser. */
+  /** The Electron application for this spec file, or null in a browser. */
   electronApp: ElectronApplication | null;
-  /** What Electron passed to the backend it spawned, or null in a browser. */
+  /** What Electron passed to the backend, or null in a browser. */
   launchRecord: LaunchRecord | null;
 }
 
-/** Set by the `electronApp` fixture so `launchRecord` can hand it on. */
+type WorkerFixtures = DashboardWorkerOptions;
+
+/** Set by `electronApp` so the dependent launchRecord fixture can read it. */
 let launchedRecord: LaunchRecord | null = null;
 
 export const test = base.extend<Fixtures, WorkerFixtures>({
   shell: ["browser", { scope: "worker", option: true }],
 
-  electronApp: [
-    async ({ shell }, use, workerInfo) => {
-      if (shell !== "electron") {
-        await use(null);
-        return;
-      }
-      const launch = await launchDesktopApp(`w${workerInfo.workerIndex}`);
-      launchedRecord = launch.readRecord();
+  electronApp: async ({ shell }, use, testInfo) => {
+    if (shell !== "electron") {
+      await use(null);
+      return;
+    }
+    const launch = await launchDesktopApp(`w${testInfo.workerIndex}-r${testInfo.retry}`);
+    launchedRecord = launch.readRecord();
+    try {
       await use(launch.app);
-      await closeDesktopApp(launch);
-    },
-    { scope: "worker" },
-  ],
+    } finally {
+      try {
+        await closeDesktopApp(launch);
+      } finally {
+        launchedRecord = null;
+      }
+    }
+  },
 
-  launchRecord: [
-    async ({ electronApp }, use) => {
-      await use(electronApp === null ? null : launchedRecord);
-    },
-    { scope: "worker" },
-  ],
+  launchRecord: async ({ shell, electronApp }, use) => {
+    if (shell !== "electron") {
+      await use(null);
+      return;
+    }
+    if (electronApp === null || launchedRecord === null) {
+      throw new Error("Electron launch record is unavailable");
+    }
+    await use(launchedRecord);
+  },
 
   page: async ({ shell, page, electronApp }, use) => {
     if (shell !== "electron") {

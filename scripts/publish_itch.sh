@@ -26,18 +26,17 @@ if [[ -z "$linux_archive" || -z "$windows_archive" ]]; then
   exit 1
 fi
 
-# `--ignore` applies to the diff as well as the upload, and that is the point:
-# butler patches the new build against the one already on the channel, and the
-# bundled metadata licence trees (`<name>.dist-info/licenses/...`) make that
-# diff fail with `lstat ...: not a directory`. The Windows channel sat on 0.2.4
-# for two releases because of it, and every retry failed identically. The
-# licence text still ships — the freeze re-roots it under `third_party_licenses/`
-# (see scripts/build_desktop_backend.py) — so ignoring the old paths costs
-# nothing and lets the patch complete.
+# Butler's ZIP comparison tries to inspect archive members as filesystem paths.
+# Give it extracted files so nested runtime packages and licenses stay intact.
+windows_dir=$(mktemp -d "${TMPDIR:-/tmp}/spikeforge-itch-windows.XXXXXXXX")
+trap 'rm -rf -- "$windows_dir"' EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+unzip -q "$windows_archive" -d "$windows_dir"
+
 butler push --if-changed --fix-permissions --userversion "$version" \
-  --ignore '**/dist-info/licenses/**' \
   "$linux_archive" "$target:linux-x64"
 butler push --if-changed --fix-permissions --userversion "$version" \
-  --ignore '**/dist-info/licenses/**' \
-  "$windows_archive" "$target:windows-x64"
+  "$windows_dir" "$target:windows-x64"
 butler status "$target"

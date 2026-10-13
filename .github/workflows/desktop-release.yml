@@ -17,8 +17,6 @@ jobs:
         include:
           - os: ubuntu-latest
             channel: linux-x64
-          # Public release workflows run on GitHub-hosted machines for both
-          # platforms, so workstation state cannot affect a published build.
           - os: windows-latest
             channel: windows-x64
     runs-on: ${{ matrix.os }}
@@ -29,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Capsize-Games/spikeforge
-          ref: 0a4f1feb4ad6ef6321d49aa768aaabd196502b20
+          ref: 0885749b9b89de4bb56b69c5fea525275fb8c8ce
           path: _backend
 
       - uses: actions/setup-node@v4
@@ -37,6 +35,9 @@ jobs:
           node-version: "22"
           cache: npm
 
+      # The engine install pulls Torch from its own index and installs the
+      # packages by path, so there is little for a hash-keyed pip cache to
+      # hold on to.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -59,6 +60,9 @@ jobs:
             ./_backend/packages/spikeforge-serve \
             ./_backend/packages/spikeforge-server
 
+      - name: Test frozen backend data collection
+        run: python scripts/frozen_backend_data_test.py
+
       - name: Freeze and launch-test backend
         timeout-minutes: 15
         run: python scripts/build_desktop_backend.py
@@ -76,8 +80,7 @@ jobs:
         run: |
           app=release/linux-unpacked
           [ -d release/win-unpacked ] && app=release/win-unpacked
-          # GitHub-hosted Linux machines have no desktop session, so use a
-          # virtual display for the packaged Electron smoke test.
+          # Hosted Linux runners need a virtual display for the packaged app.
           if [ "$RUNNER_OS" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
             xvfb-run -a node scripts/smoke_packaged_desktop.mjs --app "$app"
           else
@@ -116,6 +119,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -144,7 +148,10 @@ jobs:
 
             ### Windows
 
-            Run the portable `.exe`. There is no installation step.
+            Run `SpikeForge-Desktop-*-windows-x64-setup.exe` for a per-user
+            installation, or extract `SpikeForge-Desktop-*-windows-x64.zip`
+            and run
+            `SpikeForge Desktop.exe` from the extracted directory.
 
       - name: Publish to itch.io
         # Every desktop release ships to itch.io alongside the GitHub

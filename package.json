@@ -47,5 +47,8 @@
     "json-schema-to-typescript": "^16.0.0",
     "typescript": "^5.6.3",
     "vite": "^6.0.3"
+  },
+  "overrides": {
+    "@electron/get": "^5.0.0"
   }
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
 
+import { useAuth } from "../hooks/useAuth";
 import { useI18n } from "../i18n/I18nProvider";
-import { isDesktopRuntime, isSignedIn } from "../hubAuth";
+import { isDesktopRuntime } from "../hubAuth";
 import { PublishPanel } from "./PublishPanel";
 
 interface Props {
@@ -20,13 +21,14 @@ interface Props {
  */
 export function PublishAction({ modelName, disabled }: Props) {
   const { t } = useI18n();
+  const { state } = useAuth();
   const [open, setOpen] = useState(false);
 
   if (!isDesktopRuntime()) {
     return <p className="arch-note">{t("publish.hostedNotice")}</p>;
   }
 
-  if (!isSignedIn()) {
+  if (state.status !== "signed-in") {
     return <p className="arch-note">{t("publish.signInNotice")}</p>;
   }
 

@@ -2,51 +2,34 @@
  * Bridge to hub sign-in state.
  *
  * "Desktop sign-in: loopback PKCE + safeStorage" (issue #8) owns obtaining
- * and storing the hub access token and is not built yet, so this assumes the
- * interface it will expose rather than inventing publish-specific plumbing:
- * a `window.spikeforgeHub` object a preload script sets with
- * `contextBridge.exposeInMainWorld`, matching how `desktop/main_window.cjs`
- * already keeps every privileged capability behind `contextIsolation` rather
- * than `nodeIntegration`. There is no preload script yet either -- issue #8
- * adds the first one. Until it lands, `window.spikeforgeHub` is undefined
- * everywhere, so every accessor below reports "signed out" rather than
- * throwing: the Publish action degrades to a sign-in prompt instead of a
- * broken page.
+ * and storing the hub access token; this reads it through the bridge its
+ * preload script exposes as `window.spikeforgeAuth`
+ * (`src/authTypes.ts`), rather than inventing publish-specific plumbing.
+ * Sign-in *state* for rendering comes from `useAuth`; this module exists
+ * for the one thing a hook cannot do in an event handler -- fetch the raw
+ * token for the direct renderer-to-hub upload calls.
  *
  * The access token itself never has a reason to reach this repo's Python
  * backend (plans/hub_accounts_plan.md §8.1) -- it lives only here, in the
  * renderer, and is sent straight to the hub API.
  */
 
-export interface HubAuthBridge {
-  isSignedIn(): boolean;
-  getAccessToken(): Promise<string | null>;
-}
+import type { SpikeforgeAuthBridge } from "./authTypes";
 
-declare global {
-  interface Window {
-    spikeforgeHub?: HubAuthBridge;
-  }
-}
-
-function windowBridge(): HubAuthBridge | undefined {
-  return typeof window === "undefined" ? undefined : window.spikeforgeHub;
+function windowBridge(): SpikeforgeAuthBridge | undefined {
+  return typeof window === "undefined" ? undefined : window.spikeforgeAuth;
 }
 
 /**
- * Whether a signed-in session is available to publish with.
+ * The current hub access token, or null when signed out.
  *
- * `bridge` defaults to the real `window.spikeforgeHub` and only exists as a
- * parameter so tests can supply a fake one directly, without touching the
- * global `window`.
+ * `bridge` defaults to the real `window.spikeforgeAuth` and only exists as
+ * a parameter so tests can supply a fake one directly, without touching
+ * the global `window`.
  */
-export function isSignedIn(bridge = windowBridge()): boolean {
-  return bridge?.isSignedIn() ?? false;
-}
-
-/** The current hub access token, or null when signed out. */
 export async function getAccessToken(
-  bridge = windowBridge(),
+  bridge: Pick<SpikeforgeAuthBridge, "getAccessToken"> | undefined =
+    windowBridge(),
 ): Promise<string | null> {
   if (!bridge) return null;
   return bridge.getAccessToken();

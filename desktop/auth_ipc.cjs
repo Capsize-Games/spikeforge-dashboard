@@ -45,6 +45,7 @@ function registerAuthIpc(getWindow) {
   s.onStateChanged((state) => send("auth:state-changed", state));
 
   ipcMain.handle("auth:get-state", () => s.getState());
+  ipcMain.handle("auth:get-access-token", () => s.getAccessToken());
 
   ipcMain.handle("auth:sign-in-browser", async () => {
     await s.signInWithBrowser();

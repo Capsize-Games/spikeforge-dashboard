@@ -15,9 +15,11 @@ name: Electron e2e
 # marked `continue-on-error`: a genuine spec failure must still turn this
 # workflow red. Make this a required check again once the teardown is fixed.
 
+# Pull requests only. It used to run on `main` as well, which re-tested the
+# same commits a second time after the merge. While the teardown issue above
+# keeps this workflow red regardless, the `main` runs are pure cost, so they
+# stay off until the teardown is fixed and this becomes a required check.
 on:
-  push:
-    branches: [main]
   pull_request:
 
 concurrency:

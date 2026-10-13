@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+          - os: ubuntu-latest
             platform: linux
           - os: windows-latest
             platform: windows
@@ -51,7 +51,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
         run: |
-          pattern='*windows*portable.exe'
+          pattern='*windows*.zip'
           [ "${{ matrix.platform }}" = "linux" ] && pattern='*linux-x86_64.tar.gz'
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
             --pattern "$pattern" --dir artifact
@@ -78,9 +78,9 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          installer=$(find artifact -name '*.exe' -print -quit)
-          7z x "$installer" -oextract -y > /dev/null
-          7z x 'extract/$PLUGINSDIR/app-64.7z' -oapp -y > /dev/null
+          # The zip holds the packaged application files directly; the
+          # installer of the same build is for people, not for launching.
+          unzip -q artifact/*.zip -d app
           echo "APP_DIR=app" >> "$GITHUB_ENV"
 
       - name: Launch it

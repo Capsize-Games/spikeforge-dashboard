@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   propose:
-    runs-on: [self-hosted, linux, x64, spikeforge-dashboard-ci]
+    runs-on: ubuntu-latest
     steps:
       - name: Require an automation token
         shell: bash

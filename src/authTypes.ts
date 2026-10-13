@@ -46,6 +46,12 @@ export interface DeviceCodeStatusUpdate {
 /** The bridge itself, matching `desktop/preload.cjs` exactly. */
 export interface SpikeforgeAuthBridge {
   getState: () => Promise<AuthState>;
+  /**
+   * The raw access token for the renderer's direct hub API calls
+   * (publish), or null when signed out. The one member that carries a
+   * token; `AuthState` deliberately carries none.
+   */
+  getAccessToken: () => Promise<string | null>;
   signInWithBrowser: () => Promise<AuthState>;
   cancelBrowserSignIn: () => Promise<void>;
   startDeviceCode: () => Promise<DeviceCodeStart>;

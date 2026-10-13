@@ -68,6 +68,15 @@ function createSignInSession({
     return { status, handle, displayName, persistent, warning };
   }
 
+  /**
+   * The raw access token for the renderer's direct hub API calls
+   * (publish), or null when signed out. The one accessor that returns a
+   * token; `getState` deliberately excludes it.
+   */
+  function getAccessToken() {
+    return state.accessToken;
+  }
+
   function publish() {
     for (const listener of listeners) listener(publicState());
   }
@@ -212,6 +221,7 @@ function createSignInSession({
 
   return {
     getState: publicState,
+    getAccessToken,
     onStateChanged,
     restore,
     signInWithBrowser,

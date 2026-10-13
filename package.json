@@ -1,7 +1,7 @@
 {
   "name": "spikeforge-dashboard",
   "private": true,
-  "version": "0.2.7",
+  "version": "0.2.9",
   "description": "Desktop and browser interface for the SpikeForge spiking-neural-network toolkit.",
   "desktopName": "SpikeForge Desktop",
   "author": "Capsize LLC <contact@capsizegames.com>",
@@ -42,7 +42,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^44.3.0",
+    "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
     "json-schema-to-typescript": "^16.0.0",
     "typescript": "^5.6.3",

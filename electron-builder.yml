@@ -11,6 +11,17 @@ files:
   - desktop/main_window.cjs
   - desktop/desktop_log.cjs
   - desktop/startup_page.cjs
+  - desktop/preload.cjs
+  - desktop/auth_ipc.cjs
+  # The hub sign-in session and the flows it requires. The `*.test.cjs`
+  # files beside them are deliberately not shipped.
+  - desktop/auth/browser_flow.cjs
+  - desktop/auth/credential_store.cjs
+  - desktop/auth/device_code_flow.cjs
+  - desktop/auth/loopback_server.cjs
+  - desktop/auth/oauth_client.cjs
+  - desktop/auth/pkce.cjs
+  - desktop/auth/sign_in_session.cjs
   - desktop/assets/icon.png
   - LICENSE
   - NOTICE.md

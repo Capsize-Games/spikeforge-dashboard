@@ -100,3 +100,17 @@ test("notifies subscribers on every state change", async () => {
     api.close();
   }
 });
+
+test("getAccessToken follows the session: null, token, null", async () => {
+  const api = await fakeHubApi({ handle: "ada" });
+  try {
+    const s = session({ baseUrl: api.baseUrl });
+    assert.equal(s.getAccessToken(), null);
+    await s.signInWithBrowser();
+    assert.equal(s.getAccessToken(), "sfh_at_1");
+    s.signOut();
+    assert.equal(s.getAccessToken(), null);
+  } finally {
+    api.close();
+  }
+});

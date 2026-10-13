@@ -13,6 +13,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 const CHANNEL = {
   getState: "auth:get-state",
+  getAccessToken: "auth:get-access-token",
   stateChanged: "auth:state-changed",
   signInBrowser: "auth:sign-in-browser",
   cancelBrowser: "auth:cancel-browser",
@@ -35,6 +36,7 @@ function subscription(channel) {
 
 contextBridge.exposeInMainWorld("spikeforgeAuth", {
   getState: () => ipcRenderer.invoke(CHANNEL.getState),
+  getAccessToken: () => ipcRenderer.invoke(CHANNEL.getAccessToken),
   signInWithBrowser: () => ipcRenderer.invoke(CHANNEL.signInBrowser),
   cancelBrowserSignIn: () => ipcRenderer.invoke(CHANNEL.cancelBrowser),
   startDeviceCode: () => ipcRenderer.invoke(CHANNEL.startDeviceCode),

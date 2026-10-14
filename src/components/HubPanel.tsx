@@ -5,6 +5,7 @@ import { useI18n } from "../i18n/I18nProvider";
 import { HUB_FRAMEWORKS, HUB_KINDS } from "../hubTypes";
 import { useHub } from "../hooks/useHub";
 import { HelpTip } from "./HelpTip";
+import { HubActionErrorView } from "./HubActionErrorView";
 import { HubDownloadProgress } from "./HubDownloadProgress";
 import { HubEntryCard } from "./HubEntryCard";
 import { HubVerdictView } from "./HubVerdictView";
@@ -25,6 +26,9 @@ export function HubPanel({ hub }: Props) {
   const entries = hub.search ? hub.search.results : (hub.list?.entries ?? []);
   const issues = hub.list?.issues ?? [];
   const active = hub.download?.status === "downloading" ? hub.download : null;
+  const pulling = hub.pull?.status === "downloading" ? hub.pull : null;
+  const pullError =
+    hub.actionError?.action === "pull" ? hub.actionError : null;
 
   const changeFramework = (value: string) => {
     setFramework(value);
@@ -128,6 +132,7 @@ export function HubPanel({ hub }: Props) {
               onDownload={hub.downloadEntry}
               onInspect={hub.inspectEntry}
               onImport={hub.importEntry}
+              onPull={hub.pullEntry}
             />
           ))}
         </ul>
@@ -136,6 +141,16 @@ export function HubPanel({ hub }: Props) {
       {active && (
         <HubDownloadProgress download={active} onCancel={hub.cancelDownload} />
       )}
+
+      {pulling && (
+        <HubDownloadProgress
+          download={pulling}
+          onCancel={hub.cancelDownload}
+          title="Pulling"
+        />
+      )}
+
+      {pullError && <HubActionErrorView error={pullError} />}
 
       {hub.inspect && (
         <div className="hub-inspect">

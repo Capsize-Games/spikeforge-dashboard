@@ -123,6 +123,11 @@
   font-size: var(--fs-telemetry);
 }
 
+.hub-error {
+  color: var(--bad);
+  font-size: var(--fs-telemetry);
+}
+
 /* --- publish to hub: action, form, and upload progress --- */
 .publish-action {
   margin-top: 8px;

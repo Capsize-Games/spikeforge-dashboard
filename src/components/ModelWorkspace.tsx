@@ -1,3 +1,5 @@
+import type { HubActionError } from "../hubActionError";
+import type { HubBundleBuiltPayload } from "../hubTypes";
 import { useI18n } from "../i18n/I18nProvider";
 import type {
   DatasetInfo,
@@ -34,12 +36,15 @@ interface Props {
   loading: boolean;
   readOnly: boolean;
   locked: boolean;
+  built: HubBundleBuiltPayload | null;
+  buildError: HubActionError | null;
   onPatchConfig: (patch: Partial<EncodeConfig>) => void;
   onModelChange: (patch: Partial<TrainConfig>) => void;
   onSelectSample: (patch: Partial<EncodeConfig>) => void;
   onNew: () => void;
   onLoad: (name: string) => void;
   onSave: (name: string) => void;
+  onBuild: (name: string) => void;
   onTrain: () => void;
   onStopTrain: () => void;
 }
@@ -79,12 +84,15 @@ export function ModelWorkspace({
   loading,
   readOnly,
   locked,
+  built,
+  buildError,
   onPatchConfig,
   onModelChange,
   onSelectSample,
   onNew,
   onLoad,
   onSave,
+  onBuild,
   onTrain,
   onStopTrain,
 }: Props) {
@@ -102,10 +110,13 @@ export function ModelWorkspace({
           connected={connected}
           busy={busy}
           loading={loading}
+          built={built}
+          buildError={buildError}
           readOnly={readOnly}
           onNew={onNew}
           onLoad={onLoad}
           onSave={onSave}
+          onBuild={onBuild}
         />
 
         <Section title={t("section.train")} hint={t("section.train.hint")}>

@@ -156,12 +156,17 @@ export default function App() {
             loading={viewer.modelLoading}
             readOnly={readOnly}
             locked={viewer.locked}
+            built={hub.built}
+            buildError={
+              hub.actionError?.action === "build" ? hub.actionError : null
+            }
             onPatchConfig={patchConfig}
             onModelChange={training.patch}
             onSelectSample={actions.selectSample}
             onNew={actions.newModel}
             onLoad={actions.loadModel}
             onSave={actions.saveModel}
+            onBuild={hub.buildBundle}
             onTrain={actions.train}
             onStopTrain={actions.stopTrain}
           />

@@ -6,13 +6,13 @@
     "these together with that file; tests/e2e/specs/smoke/protocol.spec.ts",
     "asserts the running server reports the protocol version below."
   ],
-  "protocol_version": "1.0",
+  "protocol_version": "1.1",
   "packages": {
-    "spikeforge": "0.5.1",
-    "spikeforge-targets": "0.2.1",
-    "spikeforge-hub": "0.3.2",
-    "spikeforge-serve": "0.2.4",
-    "spikeforge-server": "0.3.4"
+    "spikeforge": "0.6.0",
+    "spikeforge-targets": "0.2.2",
+    "spikeforge-hub": "0.4.0",
+    "spikeforge-serve": "0.2.5",
+    "spikeforge-server": "0.4.0"
   },
   "extras": {
     "spikeforge": [

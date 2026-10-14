@@ -98,6 +98,10 @@ export const EN = {
   "model.saved": "Saved models",
   "model.name": "Model name",
   "model.download": "Download .spkf",
+  "model.build": "Build .spkf",
+  "model.builtPath": "path",
+  "model.builtSize": "size",
+  "model.builtSha": "sha256",
   "model.demoDisabled": "Model loading is disabled on the public demo.",
   "model.unloadTitle": "Unload the current model?",
   "model.unloadMessage":

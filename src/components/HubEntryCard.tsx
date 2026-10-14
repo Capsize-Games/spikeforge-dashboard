@@ -7,6 +7,7 @@ interface Props {
   onDownload: (id: string) => void;
   onInspect: (id: string) => void;
   onImport: (id: string) => void;
+  onPull: (id: string) => void;
 }
 
 function sizeLabel(bytes: number | null): string {
@@ -22,6 +23,7 @@ export function HubEntryCard({
   onDownload,
   onInspect,
   onImport,
+  onPull,
 }: Props) {
   return (
     <li className={`hub-card${selected ? " selected" : ""}`}>
@@ -54,6 +56,15 @@ export function HubEntryCard({
           <button type="button" onClick={() => onImport(entry.id)}>
             import
           </button>
+          {entry.source === "community" && (
+            <button
+              type="button"
+              data-testid="hub-pull"
+              onClick={() => onPull(entry.id)}
+            >
+              pull
+            </button>
+          )}
         </div>
       )}
     </li>

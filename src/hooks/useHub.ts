@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { isTerminalPullStatus } from "../hubActionError";
 import type {
+  HubBundleBuiltPayload,
   HubDownloadState,
   HubImportPayload,
   HubInspectPayload,
   HubListPayload,
+  HubPullState,
   HubQueryInput,
   HubSearchPayload,
 } from "../hubTypes";
 import type { ServerMsg } from "../types";
 import { useWebSocket } from "../useWebSocket";
+import { useHubPendingAction } from "./useHubPendingAction";
 
 type WebSocketControls = ReturnType<typeof useWebSocket>;
 
@@ -26,30 +30,50 @@ export function useHub({ ws, connected }: Options) {
   const [download, setDownload] = useState<HubDownloadState | null>(null);
   const [inspect, setInspect] = useState<HubInspectPayload | null>(null);
   const [imported, setImported] = useState<HubImportPayload | null>(null);
+  const [pull, setPull] = useState<HubPullState | null>(null);
+  const [built, setBuilt] = useState<HubBundleBuiltPayload | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const { actionError, begin, settle, clear, capture } =
+    useHubPendingAction();
 
   /** Fold one server message into the hub state; other types pass through. */
-  const onMessage = useCallback((msg: ServerMsg) => {
-    switch (msg.type) {
-      case "hub_list":
-        setList(msg.payload);
-        break;
-      case "hub_search":
-        setSearch(msg.payload);
-        break;
-      case "hub_download_state":
-        setDownload(msg.payload);
-        break;
-      case "hub_inspect":
-        setInspect(msg.payload);
-        break;
-      case "hub_import":
-        setImported(msg.payload);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const onMessage = useCallback(
+    (msg: ServerMsg) => {
+      switch (msg.type) {
+        case "hub_list":
+          setList(msg.payload);
+          break;
+        case "hub_search":
+          setSearch(msg.payload);
+          break;
+        case "hub_download_state":
+          setDownload(msg.payload);
+          break;
+        case "hub_inspect":
+          setInspect(msg.payload);
+          break;
+        case "hub_import":
+          setImported(msg.payload);
+          break;
+        case "hub_pull_state":
+          setPull(msg.payload);
+          if (isTerminalPullStatus(msg.payload.status)) settle();
+          break;
+        case "bundle_built":
+          settle();
+          setBuilt(msg.payload);
+          break;
+        case "error": {
+          const settled = capture(msg.payload);
+          if (settled?.action === "pull") setPull(null);
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [capture, settle],
+  );
 
   /** Refresh the catalog, optionally re-filtering it. */
   const refresh = useCallback(
@@ -65,11 +89,15 @@ export function useHub({ ws, connected }: Options) {
     [sendHub],
   );
 
-  const select = useCallback((id: string) => {
-    setSelected(id);
-    setInspect(null);
-    setImported(null);
-  }, []);
+  const select = useCallback(
+    (id: string) => {
+      setSelected(id);
+      setInspect(null);
+      setImported(null);
+      clear();
+    },
+    [clear],
+  );
 
   const downloadEntry = useCallback(
     (id: string) => {
@@ -108,6 +136,31 @@ export function useHub({ ws, connected }: Options) {
     [sendHub],
   );
 
+  const pullEntry = useCallback(
+    (id: string) => {
+      select(id);
+      begin("pull", id);
+      setPull({
+        id,
+        status: "downloading",
+        bytes: 0,
+        total_bytes: null,
+        verified: false,
+      });
+      sendHub("hub_pull", {}, id);
+    },
+    [begin, select, sendHub],
+  );
+
+  const buildBundle = useCallback(
+    (name: string) => {
+      begin("build", name);
+      setBuilt(null);
+      sendHub("bundle_build", {}, name);
+    },
+    [begin, sendHub],
+  );
+
   useEffect(() => {
     if (!connected) return;
     sendHub("hub_list", {});
@@ -119,6 +172,9 @@ export function useHub({ ws, connected }: Options) {
     download,
     inspect,
     imported,
+    pull,
+    built,
+    actionError,
     selected,
     onMessage,
     refresh,
@@ -128,5 +184,7 @@ export function useHub({ ws, connected }: Options) {
     cancelDownload,
     inspectEntry,
     importEntry,
+    pullEntry,
+    buildBundle,
   };
 }

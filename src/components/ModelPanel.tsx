@@ -1,9 +1,10 @@
 import { useState } from "react";
 
-import { bundleUrl } from "../bundleUrl";
+import type { HubActionError } from "../hubActionError";
+import type { HubBundleBuiltPayload } from "../hubTypes";
 import { useI18n } from "../i18n/I18nProvider";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { PublishAction } from "./PublishAction";
+import { ModelBundleTab } from "./ModelBundleTab";
 import type { SavedModel } from "../types";
 
 interface Props {
@@ -12,9 +13,12 @@ interface Props {
   connected: boolean;
   busy: boolean;
   loading: boolean;
+  built: HubBundleBuiltPayload | null;
+  buildError: HubActionError | null;
   onNew: () => void;
   onLoad: (name: string) => void;
   onSave: (name: string) => void;
+  onBuild: (name: string) => void;
   readOnly?: boolean;
 }
 
@@ -29,16 +33,18 @@ export function ModelPanel({
   connected,
   busy,
   loading,
+  built,
+  buildError,
   onNew,
   onLoad,
   onSave,
+  onBuild,
   readOnly = false,
 }: Props) {
   const { t } = useI18n();
   const [tab, setTab] = useState<"load" | "save" | "bundle">("load");
   const [selected, setSelected] = useState("");
   const [name, setName] = useState("my_model");
-  const [bundleTarget, setBundleTarget] = useState("");
   const [confirmUnload, setConfirmUnload] = useState(false);
   const disabled = !connected || busy || loading || readOnly;
 
@@ -168,45 +174,14 @@ export function ModelPanel({
       )}
 
       {tab === "bundle" && (
-        <div className="model-block">
-          <div className="control-row">
-            <select
-              className="text-input"
-              value={bundleTarget}
-              onChange={(e) => setBundleTarget(e.target.value)}
-              disabled={models.length === 0}
-              aria-label="Model to bundle"
-            >
-              <option value="">
-                {models.length ? t("model.choose") : t("model.noSaved")}
-              </option>
-              {models.map((m) => (
-                <option key={m.name} value={m.name}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-            <a
-              className={`apply small ${bundleTarget ? "" : "disabled"}`}
-              href={bundleTarget ? bundleUrl(bundleTarget) : undefined}
-              aria-disabled={!bundleTarget}
-              onClick={(e) => {
-                if (!bundleTarget) e.preventDefault();
-              }}
-              download
-            >
-              {t("model.download")}
-            </a>
-          </div>
-          <p className="arch-note">
-            A portable deployment bundle — everything a runtime needs to load
-            and run this model, with no training code attached. Install it as a
-            standalone command with{" "}
-            <code>spikeforge-serve install &lt;file&gt;.spkf</code>, or serve it
-            with <code>spikeforge-serve serve --bundle &lt;file&gt;.spkf</code>.
-          </p>
-          <PublishAction modelName={bundleTarget} disabled={!bundleTarget} />
-        </div>
+        <ModelBundleTab
+          models={models}
+          connected={connected}
+          readOnly={readOnly}
+          built={built}
+          buildError={buildError}
+          onBuild={onBuild}
+        />
       )}
 
       <ConfirmDialog

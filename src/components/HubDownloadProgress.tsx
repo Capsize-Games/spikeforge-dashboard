@@ -6,6 +6,8 @@ import type { HubDownloadState } from "../hubTypes";
 interface Props {
   download: HubDownloadState;
   onCancel: () => void;
+  /** Leading verb; pulls reuse the download progress shape. */
+  title?: string;
 }
 
 function megabytes(bytes: number): string {
@@ -13,7 +15,11 @@ function megabytes(bytes: number): string {
 }
 
 /** Hub download progress with cancel and an honest verified state. */
-export function HubDownloadProgress({ download, onCancel }: Props) {
+export function HubDownloadProgress({
+  download,
+  onCancel,
+  title = "Downloading",
+}: Props) {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const total = download.total_bytes;
   const progress =
@@ -24,7 +30,7 @@ export function HubDownloadProgress({ download, onCancel }: Props) {
   return (
     <div className="hub-download" role="status" aria-live="polite">
       <div className="hub-download-title">
-        Downloading {download.id || "model"}…
+        {title} {download.id || "model"}…
       </div>
       <div className="hub-download-bar" aria-hidden="true">
         <span className="hub-download-fill" />

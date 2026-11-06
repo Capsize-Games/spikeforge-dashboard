@@ -26,6 +26,16 @@ LOCAL_DISTRIBUTIONS = (
     ("spikeforge-server", None),
 )
 
+#: Transitive dependencies pip cannot resolve from a version range because
+#: every published release is yanked: pip ignores yanked files unless the
+#: requirement pins one exactly. `spikeforge` needs `capsize-commons>=0.1.1`
+#: but the owner paused that distribution, so resolving the range reports
+#: "from versions: none" and provisioning fails. Revisit when the
+#: distribution is un-paused or the engine drops the dependency.
+YANKED_EXPLICIT_PINS = (
+    ("capsize-commons", "0.1.2"),
+)
+
 
 def load_pins() -> Dict[str, object]:
     """Return the pinned release combination the suite targets."""
@@ -64,6 +74,20 @@ def protocol_version(pins: Dict[str, object]) -> str:
     return str(pins["protocol_version"])
 
 
+def _missing_yanked_pins(requirements: List[str]) -> List[str]:
+    """Return the explicit yanked pins `requirements` does not name yet."""
+    pinned = {
+        item.split("[", 1)[0].split("=", 1)[0].strip().lower().replace(
+            "-", "_")
+        for item in requirements
+    }
+    return [
+        f"{name}=={version}"
+        for name, version in YANKED_EXPLICIT_PINS
+        if name.lower().replace("-", "_") not in pinned
+    ]
+
+
 def pypi_requirements(pins: Dict[str, object]) -> List[str]:
     """Return ``name[extra]==version`` for every pinned distribution."""
     packages = _object_field(pins, "packages")
@@ -73,6 +97,7 @@ def pypi_requirements(pins: Dict[str, object]) -> List[str]:
         declared = _extra_names(extras, name)
         suffix = f"[{','.join(declared)}]" if declared else ""
         requirements.append(f"{name}{suffix}=={version}")
+    requirements.extend(_missing_yanked_pins(requirements))
     return requirements
 
 

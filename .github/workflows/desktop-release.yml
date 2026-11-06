@@ -23,11 +23,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The engine commit lives in tests/e2e/backend-pins.json so the
+      # nightly pins sync never writes a workflow file, which needs the
+      # `workflows` permission the automation token does not have.
+      - name: Resolve engine commit
+        id: engine
+        run: |
+          sha=$(node -p "require('./tests/e2e/backend-pins.json').engine_commit")
+          case "$sha" in
+            ""|*[!0-9a-f]*) echo "invalid engine_commit" >&2; exit 1;;
+          esac
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
       - name: Check out the SpikeForge engine
         uses: actions/checkout@v7
         with:
           repository: Capsize-Games/spikeforge
-          ref: 0885749b9b89de4bb56b69c5fea525275fb8c8ce
+          ref: ${{ steps.engine.outputs.sha }}
           path: _backend
 
       - uses: actions/setup-node@v7

@@ -94,3 +94,19 @@ test("the actual checked-out publisher reads the tag version", (t) => {
   checkout(cwd);
   publish(cwd);
 });
+
+/**
+ * The sync must never write a workflow file, so the engine commit lives in
+ * the pins data file and the release resolves it at runtime. A hardcoded
+ * SHA here would silently reintroduce the `workflows` permission failure.
+ */
+test("engine checkout resolves from backend-pins at runtime", () => {
+  const build = workflow.split("\n  release:\n")[0];
+  assert.match(build, /Resolve engine commit/);
+  assert.match(build, /backend-pins\.json/);
+  assert.match(build, /steps\.engine\.outputs\.sha/);
+  assert.doesNotMatch(build, /ref: [0-9a-f]{40}/);
+  const pins = JSON.parse(readFileSync(join(source,
+    "tests/e2e/backend-pins.json"), "utf8"));
+  assert.match(String(pins.engine_commit), /^[0-9a-f]{40}$/);
+});

@@ -54,16 +54,19 @@ wrong.
 
 The sync uses one stable branch (`chore/backend-pins`) rebuilt from `main` each
 run, so repeated runs update a single pull request instead of opening a new one
-per day. It also moves the engine commit the desktop application builds from,
-in the same pull request — see below.
+per day. It also moves `engine_commit` in that same pins file, in the same
+pull request — see below.
 
-**The engine commit in `desktop-release.yml` is derived, not chosen.** It is
+**The engine commit in `backend-pins.json` is derived, not chosen.** It is
 whatever `spikeforge-v<version>` points at for the `spikeforge` version in
-`backend-pins.json`, so one version governs both the end-to-end suite and the
-packaged application. `npm run e2e:pins:check` fails when they disagree.
-Picking a SHA by hand is how that pin ended up on a commit that was not on the
-engine's `main` at all — 92 ahead, 99 behind, orphaned by a history rewrite. It
-still built, so nothing complained for a release and a half.
+that same file, so one version governs both the end-to-end suite and the
+packaged application. `desktop-release.yml` reads `engine_commit` at runtime
+and never carries a hardcoded SHA, so the nightly sync never writes a
+workflow file and needs no `workflows` permission. `npm run e2e:pins:check`
+fails when the commit is stale. Picking a SHA by hand is how that pin ended
+up on a commit that was not on the engine's `main` at all — 92 ahead,
+99 behind, orphaned by a history rewrite. It still built, so nothing
+complained for a release and a half.
 
 **A release is cut by workflow, not by hand.** `cut-release.yml` raises the
 version as an auto-merging pull request; `tag-on-version-change.yml` pushes the

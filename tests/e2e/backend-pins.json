@@ -4,7 +4,10 @@
     "This mirrors the last row of compatibility.json in capsize-games/spikeforge,",
     "which is the combination the Docker image and the desktop app ship. Bump",
     "these together with that file; tests/e2e/specs/smoke/protocol.spec.ts",
-    "asserts the running server reports the protocol version below."
+    "asserts the running server reports the protocol version below.",
+    "engine_commit is what spikeforge-v<spikeforge> points at, and the",
+    "desktop release reads it at runtime, so the sync never touches",
+    "workflow files."
   ],
   "protocol_version": "1.1",
   "packages": {
@@ -14,6 +17,7 @@
     "spikeforge-serve": "0.2.5",
     "spikeforge-server": "0.4.0"
   },
+  "engine_commit": "d68d08fb68666486f7a6b5d5927df6e1392bdaad",
   "extras": {
     "spikeforge": [
       "nir"

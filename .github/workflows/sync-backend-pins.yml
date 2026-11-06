@@ -7,6 +7,12 @@ name: Sync backend pins
 # nobody ships any more. This does it instead, and opens a pull request so the
 # bump is reviewed before it lands.
 #
+# The pins file also carries the engine commit the desktop release builds
+# from, and `desktop-release.yml` reads it at runtime. Keeping the commit in
+# the data file means this sync never creates or updates a workflow file,
+# which would need the `workflows` permission the automation token does not
+# have.
+#
 # The pull request is opened with `AUTOMATION_TOKEN` when that secret exists,
 # and falls back to the built-in `GITHUB_TOKEN` when it does not. The fallback
 # works, but its checks never start: GitHub does not trigger workflow runs for
@@ -20,7 +26,8 @@ on:
     - cron: "17 4 * * *"
   workflow_dispatch:
 
-# The pull request the job opens is its whole purpose.
+# The pull request the job opens is its whole purpose. It only writes the
+# pins data file, so it needs no `workflows` permission.
 permissions:
   contents: write
   pull-requests: write
@@ -48,12 +55,11 @@ jobs:
         run: |
           node scripts/sync_backend_pins.mjs | tee /tmp/sync.log
           # The engine commit the desktop app builds from is derived from the
-          # version above, so it moves in the same pull request. Pinning them
+          # version above, so it moves in the same pins file. Pinning them
           # separately is how the release workflow ended up building a commit
           # that was no longer on the engine's main branch.
           node scripts/sync_engine_ref.mjs | tee -a /tmp/sync.log
-          if git diff --quiet -- tests/e2e/backend-pins.json \
-            .github/workflows/desktop-release.yml; then
+          if git diff --quiet -- tests/e2e/backend-pins.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -84,9 +90,10 @@ jobs:
 
           # Rebuild the branch from the current main each run, so the pins are
           # always the only difference and a merged bump leaves nothing stale.
+          # Only the data file is staged: staging a workflow file would need
+          # the `workflows` permission the automation token lacks.
           git checkout -B "$branch"
-          git add tests/e2e/backend-pins.json \
-            .github/workflows/desktop-release.yml
+          git add tests/e2e/backend-pins.json
 
           if git diff --cached --quiet; then
             echo "pins already match main; nothing to open"
@@ -96,7 +103,8 @@ jobs:
           body="tests/e2e/backend-pins.json mirrors the last entry of"
           body="$body compatibility.json in Capsize-Games/spikeforge, the"
           body="$body release combination the Docker image and the desktop"
-          body="$body application ship."
+          body="$body application ship. It also carries the engine commit"
+          body="$body the desktop release builds from."
           git commit \
             -m "Pin the end-to-end suite to the current engine release" \
             -m "$body"

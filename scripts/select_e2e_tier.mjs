@@ -72,6 +72,7 @@ const TOUCHES_APP = [
   // The suite's own tooling: the tier selector, the server runner, and the
   // backend provisioner. A change here can silently change what runs.
   /^scripts\/(select_e2e_tier|run_e2e_server|sync_backend_pins)/,
+  /^scripts\/sync_engine_ref/,
   /^scripts\/(provision_e2e_backend|e2e_backend_pins|e2e_backend_stamp)/,
   /^\.github\/workflows\/(ci|electron-e2e)\.yml$/,
 ];

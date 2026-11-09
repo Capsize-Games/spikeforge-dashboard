@@ -10,8 +10,9 @@ import { test } from "node:test";
 
 const branch = "chore/backend-pins";
 const pins = "tests/e2e/backend-pins.json";
-// The step commits the engine ref alongside the pins, so the fixture has
-// to carry that file too or `git add` fails on a missing pathspec.
+// The sync must never stage a workflow file: pushing one needs the
+// `workflows` permission the automation token lacks. The fixture keeps a
+// workflow file around so a regression restages it and fails below.
 const releaseWorkflow = ".github/workflows/desktop-release.yml";
 const workflow = readFileSync(new URL(
   "../.github/workflows/sync-backend-pins.yml", import.meta.url,
@@ -58,7 +59,6 @@ function checkout(repo, name, version) {
   git(repo.root, "clone", "--single-branch", "--branch", "main",
     `file://${repo.origin}`, cwd);
   writeFileSync(join(cwd, pins), `${version}\n`);
-  writeFileSync(join(cwd, releaseWorkflow), `ref: ${version}\n`);
   return cwd;
 }
 
@@ -111,7 +111,7 @@ test("fresh runs update one PR and pick up a newer manifest", (t) => {
     assert.equal(git(repo.origin, "show", `${branch}:${pins}`), version);
     assert.equal(
       git(repo.origin, "show", `${branch}:${releaseWorkflow}`),
-      `ref: ${version}`,
+      "ref: old",
     );
   }
   const state = JSON.parse(readFileSync(join(repo.root, "pr.json"), "utf8"));

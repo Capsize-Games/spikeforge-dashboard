@@ -10,9 +10,11 @@ import { test } from "node:test";
 
 const branch = "chore/backend-pins";
 const pins = "tests/e2e/backend-pins.json";
-// The step commits the engine ref alongside the pins, so the fixture has
-// to carry that file too or `git add` fails on a missing pathspec.
-const releaseWorkflow = ".github/workflows/desktop-release.yml";
+// The bump touches only this data file. An earlier version also rewrote
+// the engine `ref:` in `desktop-release.yml`, which the built-in token
+// cannot push without the `workflows` permission, so the fixture must not
+// grow a workflow file again or `git add` in the step under test changes
+// meaning.
 const workflow = readFileSync(new URL(
   "../.github/workflows/sync-backend-pins.yml", import.meta.url,
 ), "utf8");
@@ -43,10 +45,8 @@ function repository(t) {
   git(seed, "config", "user.name", "Test");
   git(seed, "config", "user.email", "test@example.invalid");
   mkdirSync(join(seed, "tests/e2e"), { recursive: true });
-  mkdirSync(join(seed, ".github/workflows"), { recursive: true });
   writeFileSync(join(seed, pins), "old\n");
-  writeFileSync(join(seed, releaseWorkflow), "ref: old\n");
-  git(seed, "add", pins, releaseWorkflow);
+  git(seed, "add", pins);
   git(seed, "commit", "-m", "initial");
   git(seed, "remote", "add", "origin", origin);
   git(seed, "push", "origin", "main");
@@ -58,7 +58,6 @@ function checkout(repo, name, version) {
   git(repo.root, "clone", "--single-branch", "--branch", "main",
     `file://${repo.origin}`, cwd);
   writeFileSync(join(cwd, pins), `${version}\n`);
-  writeFileSync(join(cwd, releaseWorkflow), `ref: ${version}\n`);
   return cwd;
 }
 
@@ -109,10 +108,10 @@ test("fresh runs update one PR and pick up a newer manifest", (t) => {
     assert.equal(git(cwd, "branch", "-r", "--list", `origin/${branch}`), "");
     runSync(repo, cwd);
     assert.equal(git(repo.origin, "show", `${branch}:${pins}`), version);
-    assert.equal(
-      git(repo.origin, "show", `${branch}:${releaseWorkflow}`),
-      `ref: ${version}`,
-    );
+    // The bump must not carry a workflow file: pushing one needs the
+    // `workflows` permission the built-in token can never hold.
+    assert.throws(() => git(repo.origin, "show",
+      `${branch}:.github/workflows/desktop-release.yml`));
   }
   const state = JSON.parse(readFileSync(join(repo.root, "pr.json"), "utf8"));
   assert.deepEqual(state, { created: 1, edited: 2 });

@@ -70,8 +70,11 @@ const TOUCHES_APP = [
   /^tsconfig.*\.json$/,
   /^vite\.config\.ts$/,
   // The suite's own tooling: the tier selector, the server runner, and the
-  // backend provisioner. A change here can silently change what runs.
-  /^scripts\/(select_e2e_tier|run_e2e_server|sync_backend_pins)/,
+  // backend provisioner. A change here can silently change what runs. This
+  // includes the engine-commit sync: it decides which engine the release
+  // workflow and the suite build against, so it must never sneak through
+  // with no tier the way an unlisted tooling path does.
+  /^scripts\/(select_e2e_tier|run_e2e_server|sync_backend_pins|sync_engine_ref)/,
   /^scripts\/(provision_e2e_backend|e2e_backend_pins|e2e_backend_stamp)/,
   /^\.github\/workflows\/(ci|electron-e2e)\.yml$/,
 ];

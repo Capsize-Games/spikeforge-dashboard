@@ -4,20 +4,24 @@
     "This mirrors the last row of compatibility.json in capsize-games/spikeforge,",
     "which is the combination the Docker image and the desktop app ship. Bump",
     "these together with that file; tests/e2e/specs/smoke/protocol.spec.ts",
-    "asserts the running server reports the protocol version below."
+    "asserts the running server reports the protocol version below.",
+    "engine_commit is the spikeforge-v<version> commit the desktop app",
+    "builds from, refreshed by scripts/sync_engine_ref.mjs and read by",
+    ".github/workflows/desktop-release.yml at build time."
   ],
   "protocol_version": "1.1",
   "packages": {
-    "spikeforge": "0.6.0",
-    "spikeforge-targets": "0.2.2",
-    "spikeforge-hub": "0.4.0",
-    "spikeforge-serve": "0.2.5",
-    "spikeforge-server": "0.4.0"
+    "spikeforge": "0.6.3",
+    "spikeforge-targets": "0.2.4",
+    "spikeforge-hub": "0.5.2",
+    "spikeforge-serve": "0.2.7",
+    "spikeforge-server": "0.5.2"
   },
   "extras": {
     "spikeforge": [
       "nir"
     ]
   },
-  "torch_index_url": "https://download.pytorch.org/whl/cpu"
+  "torch_index_url": "https://download.pytorch.org/whl/cpu",
+  "engine_commit": "470f610044256010c28b5f419464c6b04b1b0b40"
 }

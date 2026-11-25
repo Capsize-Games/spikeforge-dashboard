@@ -59,6 +59,8 @@ test("a change to the selection machinery runs the full tier", () => {
   // Regression: these selected "none", so the thing deciding what to run
   // could change without anything running.
   assert.equal(selectTier(["scripts/select_e2e_tier.mjs"]), "full");
+  assert.equal(selectTier(["scripts/sync_engine_ref.mjs"]), "full");
+  assert.equal(selectTier(["scripts/sync_engine_ref.test.mjs"]), "full");
   assert.equal(selectTier(["scripts/select_e2e_tier.test.mjs"]), "full");
   assert.equal(selectTier(["scripts/provision_e2e_backend.py"]), "full");
   assert.equal(selectTier(["scripts/run_e2e_server.mjs"]), "full");

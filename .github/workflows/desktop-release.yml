@@ -23,11 +23,31 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The commit is data, not workflow text: it lives in
+      # `tests/e2e/backend-pins.json` as `engine_commit` and is refreshed by
+      # the nightly pins sync. Writing it here meant every engine bump also
+      # rewrote this file, which the built-in token cannot push without the
+      # `workflows` permission -- so the sync failed on every run that moved
+      # the engine. Reading it at build time keeps one version authoritative
+      # for the suite and the packaged application without touching this.
+      - name: Read the pinned engine commit
+        id: engine-pin
+        run: |
+          commit=$(node -e 'process.stdout.write(String(JSON.parse(
+            require("node:fs").readFileSync(
+              "tests/e2e/backend-pins.json", "utf8")).engine_commit ?? ""))')
+          if [ -z "$commit" ]; then
+            echo "::error::backend-pins.json has no engine_commit."
+            echo "::error::Run npm run e2e:pins:sync and re-provision."
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
       - name: Check out the SpikeForge engine
         uses: actions/checkout@v7
         with:
           repository: Capsize-Games/spikeforge
-          ref: 0885749b9b89de4bb56b69c5fea525275fb8c8ce
+          ref: ${{ steps.engine-pin.outputs.commit }}
           path: _backend
 
       - uses: actions/setup-node@v7

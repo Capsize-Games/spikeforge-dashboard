@@ -57,13 +57,18 @@ run, so repeated runs update a single pull request instead of opening a new one
 per day. It also moves the engine commit the desktop application builds from,
 in the same pull request — see below.
 
-**The engine commit in `desktop-release.yml` is derived, not chosen.** It is
+**The engine commit in `backend-pins.json` is derived, not chosen.** It is
 whatever `spikeforge-v<version>` points at for the `spikeforge` version in
-`backend-pins.json`, so one version governs both the end-to-end suite and the
-packaged application. `npm run e2e:pins:check` fails when they disagree.
-Picking a SHA by hand is how that pin ended up on a commit that was not on the
-engine's `main` at all — 92 ahead, 99 behind, orphaned by a history rewrite. It
-still built, so nothing complained for a release and a half.
+that same file, so one version governs both the end-to-end suite and the
+packaged application. `desktop-release.yml` reads it at build time;
+`npm run e2e:pins:check` fails when the file disagrees with the engine
+manifest. The commit lives in the data file deliberately: writing it into
+the workflow meant the bump touched `.github/workflows/`, which the
+built-in token cannot push without the `workflows` permission — so the sync
+failed on every run that moved the engine. Picking a SHA by hand is how that
+pin ended up on a commit that was not on the engine's `main` at all — 92
+ahead, 99 behind, orphaned by a history rewrite. It still built, so nothing
+complained for a release and a half.
 
 **A release is cut by workflow, not by hand.** `cut-release.yml` raises the
 version as an auto-merging pull request; `tag-on-version-change.yml` pushes the

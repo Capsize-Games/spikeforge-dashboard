@@ -65,3 +65,43 @@ Adopts `@capsizellc/commons` for one `src/` utility (the same
 this analysis. Explicitly out: `@capsizellc/ui` (blocked: it peers
 React 19 while the dashboard is React 18), the workspace verdict
 (Capsize-Games/hq#31), and any repository restructure.
+
+## Follow-up: `@capsizellc/ui` evaluated, not adopted (2026-11-25, refs #21)
+
+The React peer blocker is gone: the dashboard is React `^19.3.0`
+and `@capsizellc/ui@0.1.2` (latest on the registry) peers
+`react@^19.0.0`. Adoption was still refused, on product grounds:
+
+- The package ships the fleet theme (`src/tokens.css`: `--cap-bg`
+  `#0b0f14`, `--cap-primary` `#4f8cff`, `--cap-radius` `10px`).
+  The dashboard is the deliberate "SpikeForge Studio" system
+  (`src/styles/base.css`: `--surface-1` `#0b1017`, `--accent`
+  `#70cfff`, `--radius` `4px`). Mapping local tokens onto fleet
+  tokens is a visible restyle, which the issue forbids.
+- `Button`, `Panel` and `Stack` render Tailwind utilities from the
+  package's `tailwind-preset`. The repo has no Tailwind or PostCSS
+  (no config, no dependency), so one adopted component would drag
+  in a second styling build on top of the plain-CSS sheets.
+- Local near-duplicates were checked and kept deliberately:
+  `suggestSlug` in `src/hubPublishValidation.ts` preserves dots
+  and falls back to `"model"`, while commons `slugify` hyphenates
+  dots with no fallback — swapping changes publish behavior.
+
+What stands: `@capsizellc/commons` for `isPlainObject` in
+`src/components/pipelineInput.ts` and `fetchJson` in
+`scripts/sync_backend_pins.mjs`, both registry-resolved with no Git
+dependency, pinned by `scripts/shared_frontend_deps.test.mjs`.
+Evidence this round: clean `npm ci`, `npm run build` green
+(`tsc -b` plus vite, ~2s), `node --test` on the new guard file
+(4 pass). No local implementation qualified for invisible removal,
+so none was removed; the before/after metric is 2 shared imports,
+0 Git dependencies, 0 visual diffs.
+
+Workspace recommendation (verdict still needs Capsize-Games/hq#31):
+stay an independently released consumer. The two
+`spikeforge-dashboard` packages still share a name, Desktop/engine
+releases still advance separately, and the pins coupling already
+detects drift on its own (it caught 0.6.0 vs 0.6.3 during this
+task). A shared workspace would rename a package and recouple
+release cadences for no coupling the registry does not already
+provide.
